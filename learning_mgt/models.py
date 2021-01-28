@@ -15,7 +15,7 @@ class Mentor(models.Model):
 class Student(models.Model):
     student = models.OneToOneField(to=User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='profile/picture',max_length=255, null=True, blank=True)
-    contact = models.CharField(max_length=10)
+    contact = models.CharField(max_length=10, blank=True)
     alternate_contact = models.CharField(max_length=10)
     relation_with_alternate_contact = models.CharField(blank=False, max_length=50)
     current_location = models.CharField(max_length=50)
@@ -25,13 +25,15 @@ class Student(models.Model):
     create_time = models.DateField(auto_now_add=True)
     update_time = models.DateField(auto_now=True)
 
+
 class EducationDetails(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
     course = models.CharField(max_length=50)
     institution = models.CharField(max_length=50)
-    percentage = models.FloatField(blank=False)
+    percentage = models.FloatField(default=0.0)
     joined_at = models.DateField(auto_now_add=True)
     till = models.DateField(auto_now=True)
+
 
 class MentorStudent(models.Model):
     student = models.OneToOneField(to=User, on_delete=models.CASCADE)

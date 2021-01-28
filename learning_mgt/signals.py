@@ -1,7 +1,8 @@
 from authentication.models import User
-from learning_mgt.models import Student, EducationDetails
+from learning_mgt.models import Student, EducationDetails, Mentor
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from authentication.utils import EmailMessage
 
 @receiver(post_save, sender=User)
 def create_student_details(sender, instance, created, **kwargs):
@@ -11,6 +12,9 @@ def create_student_details(sender, instance, created, **kwargs):
             instance ([model object]): [user model instance that is actually being saved]
             created ([boolean]): [true if new record has created in user model]
     """
-    if created and instance.role == 'Student':
-        Student.objects.create(student=instance)
-        EducationDetails.objects.create(student=instance)
+    if created:
+        if instance.role == 'Student':
+            student = Student.objects.create(student=instance)
+            EducationDetails.objects.create(student=student)
+        else:
+            Mentor.objects.create(mentor=instance)
