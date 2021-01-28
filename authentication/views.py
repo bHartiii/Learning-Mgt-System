@@ -34,7 +34,7 @@ class UserCreationAPIView(generics.GenericAPIView):
 
             shortener = pyshorteners.Shortener()
             short_url = shortener.tinyurl.short(profile_link)
-            email_body = "Hii "+user.get_full_name()+'\nYou registration as student is done. \n'+'Please use this link to update your details: \n'+short_url
+            email_body = "Hii "+user.get_full_name()+'\nYou registration as student is done. \n'+'Please use this link to update your details: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user.password
             data = {'email_body':email_body ,'to_email':user.email, 'email_subject':'Registration is successful!!!!!!'}
             Util.send_email(data)
         return Response({'New user is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
