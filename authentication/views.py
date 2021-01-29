@@ -25,23 +25,24 @@ class UserCreationAPIView(generics.GenericAPIView):
         serializer.save()
         user_data = serializer.data
         user_role = user_data['role']
-        if user_role == "Student":
-            email = user_data['email']
-            user = User.objects.get(email=email)
-            user.set_password(user_data['password'])
-            user.save()
-            payload = jwt_payload_handler(user)
-            token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
+        email = user_data['email']
+        user = User.objects.get(email=email)
+        user.set_password(user_data['password'])
+        if user_role == 'Mentor' or user_role == 'Admin':
+            user.is_staff = True
+        user.save()
+        payload = jwt_payload_handler(user)
+        token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
 
-            current_site = get_current_site(request).domain
-            relative_link = reverse('login')
-            profile_link = 'http://'+current_site+relative_link+"?token="+str(token)
+        current_site = get_current_site(request).domain
+        relative_link = reverse('login')
+        profile_link = 'http://'+current_site+relative_link+"?token="+str(token)
 
-            shortener = pyshorteners.Shortener()
-            short_url = shortener.tinyurl.short(profile_link)
-            email_body = "Hii "+user.get_full_name()+'\nYou registration as student is done. \n'+'Please use this link to login: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user_data['password']
-            data = {'email_body':email_body ,'to_email':user.email, 'email_subject':'Registration is successful!!!!!!'}
-            Util.send_email(data)
+        shortener = pyshorteners.Shortener()
+        short_url = shortener.tinyurl.short(profile_link)
+        email_body = "Hii "+user.get_full_name()+'\nYou registration as '+user_role+' is done. \n'+'Please use the following link to login. This link will be activated for 24 hrours only!!!: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user_data['password']
+        data = {'email_body':email_body ,'to_email':user.email, 'email_subject':'Registration is successful!!!!!!'}
+        Util.send_email(data)
         return Response({f'New {user_role} is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
 
 
