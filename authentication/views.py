@@ -89,6 +89,29 @@ class Logout(generics.GenericAPIView):
         logout(request)
         return Response({"success": "Successfully logged out."},status=status.HTTP_200_OK)
 
+
+class ForgotPassword(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = (AllowAny,)
+
+    def post(self, request):       
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_data = serializer.data
+        user = User.objects.get(email=user_data['email']) 
+        current_site = get_current_site(request).domain
+        reverse_link = reverse('new-pass')
+        payload = jwt_payload_handler(user)
+        token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
+       
+        shortener = pyshorteners.Shortener()
+        reset_link = shortener.tinyurl.short('http://'+current_site+reverse_link+'?token='+token)
+        email_body = "hii \n"+user.username+"Use this link to reset password: \n"+reset_link
+        data={'email_body':email_body,'to_email':user.email,'email_subject':"Reset password Link"}
+        Util.send_email(data)
+        return Response(user_data, status=status.HTTP_200_OK)
+
+
 class ResetPassword(generics.GenericAPIView):
     serializer_class = ResetPasswordSerializer
     permission_classes = (IsAuthenticated,)
