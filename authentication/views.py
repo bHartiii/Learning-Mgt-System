@@ -56,21 +56,26 @@ class Login(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
+        user = User.objects.get(username=user_data['username'])
         if token:
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY)
                 user_from_token = User.objects.get(id=payload['user_id'])
-                if user_from_token.username==user_data['username']:
-                    user = authenticate(username=user_data['username'], password=user_data['password'])
-                    login(request, user)
-                    flag = True
+                if user_from_token==user and user.first_login == False:
+                    user.first_login = True
+                    user.save()
+                    user_request = authenticate(username=user_data['username'], password=user_data['password'])
+                    login(request, user_request)
                     response = redirect('/auth/new-password/?token='+token)
                     return response
+                else:
+                    return Response({'response':'You can use this link only once !!!'})
             except jwt.ExpiredSignatureError:
                 return Response({'error':'Link is Expired'}, status=status.HTTP_400_BAD_REQUEST)
             except jwt.exceptions.DecodeError:
                 return Response({'error':'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST) 
-
+        elif not token and user.first_login == False:
+            return Response({'response':'Please check your email for first login!!!'})
         else:
             user = authenticate(username=user_data['username'], password=user_data['password'])
             login(request, user)

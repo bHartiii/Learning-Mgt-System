@@ -10,6 +10,7 @@ class User(AbstractUser):
     mobile_number = models.CharField(max_length=10, default=None, null=True)
     email = models.EmailField(max_length=255, unique=True,  db_index=True)
     role = models.CharField(null=False, blank=False, choices=roles, default="Admin", max_length=10)
+    first_login = models.BooleanField(default=False)
 
     def __str__(self):
         return self.email 
