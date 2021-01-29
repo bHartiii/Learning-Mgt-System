@@ -81,6 +81,11 @@ class Login(generics.GenericAPIView):
             login(request, user)
             return Response(user_data, status=status.HTTP_200_OK)
 
+class Logout(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request):
+        logout(request)
+        return Response({"success": "Successfully logged out."},status=status.HTTP_200_OK)
 
 class ResetPassword(generics.GenericAPIView):
     serializer_class = ResetPasswordSerializer
