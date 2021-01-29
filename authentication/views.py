@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import generics, status
+from django.contrib.auth import logout, login, authenticate
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication.serializers import UserCreationSerializer, LoginSerializer, ResetPasswordSerializer, NewPasswordSerializer
 from authentication.models import User
 import jwt
@@ -29,35 +30,56 @@ class UserCreationAPIView(generics.GenericAPIView):
             user = User.objects.get(email=email)
             user.set_password(user_data['password'])
             user.save()
+            payload = jwt_payload_handler(user)
+            token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
 
             current_site = get_current_site(request).domain
             relative_link = reverse('login')
-            profile_link = 'http://'+current_site+relative_link
+            profile_link = 'http://'+current_site+relative_link+"?token="+str(token)
 
             shortener = pyshorteners.Shortener()
             short_url = shortener.tinyurl.short(profile_link)
-            email_body = "Hii "+user.get_full_name()+'\nYou registration as student is done. \n'+'Please use this link to login: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user.password
+            email_body = "Hii "+user.get_full_name()+'\nYou registration as student is done. \n'+'Please use this link to login: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user_data['password']
             data = {'email_body':email_body ,'to_email':user.email, 'email_subject':'Registration is successful!!!!!!'}
             Util.send_email(data)
         return Response({f'New {user_role} is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
 
 
 class Login(generics.GenericAPIView):
-    serializer_class = LoginSerializer
     permission_classes = (AllowAny,)
-    
-    def post(self, request):        
+    serializer_class = LoginSerializer
+    token_param_config = openapi.Parameter('token',in_=openapi.IN_QUERY,description='Description',type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def post(self, request):
+        token = request.GET.get('token')
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
-        user = authenticate(username=user_data['username'], password=user_data['password'])
-        login(request, user)
-        return Response({'Succesfully logged in!!!'}, status=status.HTTP_200_OK)
+        if token:
+            try:
+                payload = jwt.decode(token, settings.SECRET_KEY)
+                user_from_token = User.objects.get(id=payload['user_id'])
+                if user_from_token.username==user_data['username']:
+                    user = authenticate(username=user_data['username'], password=user_data['password'])
+                    login(request, user)
+                    flag = True
+                    response = redirect('/auth/new-password/?token='+token)
+                    return response
+            except jwt.ExpiredSignatureError:
+                return Response({'error':'Link is Expired'}, status=status.HTTP_400_BAD_REQUEST)
+            except jwt.exceptions.DecodeError:
+                return Response({'error':'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST) 
+
+        else:
+            user = authenticate(username=user_data['username'], password=user_data['password'])
+            login(request, user)
+            return Response(user_data, status=status.HTTP_200_OK)
 
 
 class ResetPassword(generics.GenericAPIView):
     serializer_class = ResetPasswordSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):       
         serializer = self.serializer_class(data=request.data)
@@ -80,7 +102,7 @@ class ResetPassword(generics.GenericAPIView):
 class NewPassword(generics.GenericAPIView):
 
     serializer_class = NewPasswordSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     token_param_config = openapi.Parameter('token',in_=openapi.IN_QUERY,description='Description',type=openapi.TYPE_STRING)
 
     @swagger_auto_schema(manual_parameters=[token_param_config])
