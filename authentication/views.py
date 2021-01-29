@@ -34,16 +34,16 @@ class UserCreationAPIView(generics.GenericAPIView):
         user.save()
         payload = jwt_payload_handler(user)
         token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-
-        current_site = get_current_site(request).domain
-        relative_link = reverse('login')
-        profile_link = 'http://'+current_site+relative_link+"?token="+str(token)
-
-        shortener = pyshorteners.Shortener()
-        short_url = shortener.tinyurl.short(profile_link)
-        email_body = "Hii "+user.get_full_name()+'\nYou registration as '+user_role+' is done. \n'+'Please use the following link to login. This link will be activated for 24 hrours only!!!: \n'+short_url+"\nUsername - "+user.username+"\nPassword - "+user_data['password']
-        data = {'email_body':email_body ,'to_email':user.email, 'email_subject':'Registration is successful!!!!!!'}
-        Util.send_email(data)
+        email_data = {
+            'email' : user.email,
+            'reverse' : 'login',
+            'token' : token,
+            'message' :  "Hii "+user.get_full_name()+'\n'+'You registration as '+user_role+' is done. \n'+'Please use the following link to login. This link will be activated for 24 hrours only!!! \n'+"\nUsername - "+user.username+"\nPassword - "+user_data['password'],
+            'subject' : 'Registration is successful!!!!!!',
+            'site' : get_current_site(request).domain
+        }
+        Util.email_data(email_data)
+        Util.send_email(Util.email_data(email_data))
         return Response({f'New {user_role} is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
 
 
@@ -99,16 +99,19 @@ class ForgotPassword(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
         user = User.objects.get(email=user_data['email']) 
-        current_site = get_current_site(request).domain
-        reverse_link = reverse('new-pass')
         payload = jwt_payload_handler(user)
         token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-       
-        shortener = pyshorteners.Shortener()
-        reset_link = shortener.tinyurl.short('http://'+current_site+reverse_link+'?token='+token)
-        email_body = "hii \n"+user.username+"Use this link to reset password: \n"+reset_link
-        data={'email_body':email_body,'to_email':user.email,'email_subject':"Reset password Link"}
-        Util.send_email(data)
+         
+        email_data = {
+            'email' : user.email,
+            'reverse' : 'login',
+            'token' : token,
+            'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
+            'subject' : 'Reset password Link',
+            'site' : get_current_site(request).domain
+        }
+        Util.email_data(email_data)
+        Util.send_email(Util.email_data(email_data))
         return Response(user_data, status=status.HTTP_200_OK)
 
 
@@ -121,16 +124,19 @@ class ResetPassword(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
         user = User.objects.get(email=user_data['email']) 
-        current_site = get_current_site(request).domain
-        reverse_link = reverse('new-pass')
         payload = jwt_payload_handler(user)
         token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
        
-        shortener = pyshorteners.Shortener()
-        reset_link = shortener.tinyurl.short('http://'+current_site+reverse_link+'?token='+token)
-        email_body = "hii \n"+user.username+"Use this link to reset password: \n"+reset_link
-        data={'email_body':email_body,'to_email':user.email,'email_subject':"Reset password Link"}
-        Util.send_email(data)
+        email_data = {
+            'email' : user.email,
+            'reverse' : 'login',
+            'token' : token,
+            'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
+            'subject' : 'Reset password Link',
+            'site' : get_current_site(request).domain
+        }
+        Util.email_data(email_data)
+        Util.send_email(Util.email_data(email_data))
         return Response(user_data, status=status.HTTP_200_OK)
 
 
