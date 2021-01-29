@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from authentication.serializers import UserCreationSerializer, LoginSerializer, ResetPasswordSerializer
+from authentication.serializers import UserCreationSerializer, LoginSerializer
 from authentication.models import User
 import jwt
 from rest_framework_jwt.utils import jwt_payload_handler
@@ -31,7 +31,7 @@ class UserCreationAPIView(generics.GenericAPIView):
             user.save()
 
             current_site = get_current_site(request).domain
-            relative_link = reverse('update-details')
+            relative_link = reverse('login')
             profile_link = 'http://'+current_site+relative_link
 
             shortener = pyshorteners.Shortener()
@@ -55,4 +55,3 @@ class Login(generics.GenericAPIView):
         return Response({'Succesfully logged in!!!'}, status=status.HTTP_200_OK)
 
 
-  
