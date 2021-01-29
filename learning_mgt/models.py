@@ -15,7 +15,7 @@ class Mentor(models.Model):
 class Student(models.Model):
     student = models.OneToOneField(to=User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='profile/picture',max_length=255, null=True, blank=True)
-    contact = models.CharField(max_length=10, blank=True)
+    contact = models.CharField(max_length=10)
     alternate_contact = models.CharField(max_length=10)
     relation_with_alternate_contact = models.CharField(blank=False, max_length=50)
     current_location = models.CharField(max_length=50)
