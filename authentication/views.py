@@ -14,9 +14,10 @@ from django.conf import settings
 import pyshorteners
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from authentication.permissions import IsAdmin
 
 class UserCreationAPIView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdmin,)
     serializer_class = UserCreationSerializer
 
     def post(self, request):
@@ -75,7 +76,7 @@ class Login(generics.GenericAPIView):
                 return Response({'error':'Link is Expired'}, status=status.HTTP_400_BAD_REQUEST)
             except jwt.exceptions.DecodeError:
                 return Response({'error':'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST) 
-        elif not token and user.first_login == False:
+        elif not token and user.first_login == False and user.is_superuser==False:
             return Response({'response':'Please check your email for first login!!!'})
         else:
             user = authenticate(username=user_data['username'], password=user_data['password'])
