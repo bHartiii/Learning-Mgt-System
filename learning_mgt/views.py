@@ -23,14 +23,8 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
             Save the updated user student instance
         """
         student = serializer.save(student=self.request.user)
-        education_details_data = serializer.data['education_details']
-        student_education = self.get_education_details()
-        student_education.course = education_details_data['course'],
-        student_education.percentage = education_details_data['percentage'],
-        student_education.institution = education_details_data['institution']
-        student_education.save(student=student)
-        
         return Response({'response': student}, status=status.HTTP_200_OK)
+        
 
 class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
