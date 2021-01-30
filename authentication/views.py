@@ -64,11 +64,11 @@ class Login(generics.GenericAPIView):
                 payload = jwt.decode(token, settings.SECRET_KEY)
                 user_from_token = User.objects.get(id=payload['user_id'])
                 if user_from_token==user and user.first_login == False:
-                    user.first_login = True
-                    user.save()
                     user_request = authenticate(username=user_data['username'], password=user_data['password'])
                     login(request, user_request)
                     response = redirect('/auth/new-password/?token='+token)
+                    user.first_login = True
+                    user.save()
                     return response
                 else:
                     return Response({'response':'You can use this link only once !!!'})
@@ -124,20 +124,23 @@ class ResetPassword(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
         user = User.objects.get(email=user_data['email']) 
-        payload = jwt_payload_handler(user)
-        token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-       
-        email_data = {
-            'email' : user.email,
-            'reverse' : 'new-password',
-            'token' : token,
-            'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
-            'subject' : 'Reset password Link',
-            'site' : get_current_site(request).domain
-        }
-        Util.email_data(email_data)
-        Util.send_email(Util.email_data(email_data))
-        return Response(user_data, status=status.HTTP_200_OK)
+        if user == request.user:
+            payload = jwt_payload_handler(user)
+            token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
+        
+            email_data = {
+                'email' : user.email,
+                'reverse' : 'new-password',
+                'token' : token,
+                'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
+                'subject' : 'Reset password Link',
+                'site' : get_current_site(request).domain
+            }
+            Util.email_data(email_data)
+            Util.send_email(Util.email_data(email_data))
+            return Response(user_data, status=status.HTTP_200_OK)
+        else:
+            return Response({'response':'This mail is not registered for this account!!!'})
 
 
 class NewPassword(generics.GenericAPIView):
