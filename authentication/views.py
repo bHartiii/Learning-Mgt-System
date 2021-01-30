@@ -104,7 +104,7 @@ class ForgotPassword(generics.GenericAPIView):
          
         email_data = {
             'email' : user.email,
-            'reverse' : 'login',
+            'reverse' : 'new-password',
             'token' : token,
             'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
             'subject' : 'Reset password Link',
@@ -129,7 +129,7 @@ class ResetPassword(generics.GenericAPIView):
        
         email_data = {
             'email' : user.email,
-            'reverse' : 'login',
+            'reverse' : 'new-password',
             'token' : token,
             'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
             'subject' : 'Reset password Link',
@@ -143,7 +143,7 @@ class ResetPassword(generics.GenericAPIView):
 class NewPassword(generics.GenericAPIView):
 
     serializer_class = NewPasswordSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     token_param_config = openapi.Parameter('token',in_=openapi.IN_QUERY,description='Description',type=openapi.TYPE_STRING)
 
     @swagger_auto_schema(manual_parameters=[token_param_config])
