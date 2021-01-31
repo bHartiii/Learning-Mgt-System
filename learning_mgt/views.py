@@ -48,7 +48,7 @@ class Mentors(generics.ListAPIView):
 
 class MentorDetails(generics.GenericAPIView):
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,IsAdmin)
     serializer_class = MentorSerializer
 
     def put(self, request, mentor_id):
