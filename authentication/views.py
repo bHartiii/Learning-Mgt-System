@@ -46,6 +46,19 @@ class UserCreationAPIView(generics.GenericAPIView):
         Util.send_email(Util.email_data(email_data))
         return Response({f'New {user_role} is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
 
+class UserDetails(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+    serializer_class = UserCreationSerializer
+    queryset = User.objects.all()
+    lookup_field = "id"
+
+    def perform_update(self, serializer):
+        user = serializer.save()
+        return Response({'response': user}, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        return Response({'response': f'{instance.role} is deleted successfully!!!'})
 
 class Login(generics.GenericAPIView):
     permission_classes = (AllowAny,)
