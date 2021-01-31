@@ -24,6 +24,21 @@ class Courses(generics.ListCreateAPIView):
         course = serializer.save()
         return Response({'response': course}, status=status.HTTP_201_CREATED)
 
+class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+    serializer_class = AddCourseSerializer
+    queryset = Course.objects.all()
+    lookup_field = "id"
+
+    def perform_update(self,serializer):
+        course = serializer.save()
+        return Response({'response':course}, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        return Response({'response': 'Course is deleted permanently.'}, status=status.HTTP_204_NO_CONTENT)
+
+
 class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UpdateStudentDetailsSerializer
