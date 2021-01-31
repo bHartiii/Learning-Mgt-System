@@ -16,5 +16,5 @@ def create_student_details(sender, instance, created, **kwargs):
         if instance.role == 'Student':
             student = Student.objects.create(student=instance)
             EducationDetails.objects.create(student=student)
-        else:
+        elif instance.role == 'Mentor':
             Mentor.objects.create(mentor=instance)
