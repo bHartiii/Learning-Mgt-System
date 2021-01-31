@@ -6,6 +6,9 @@ class Course(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
 
+    def __str__(self):
+        return self.course_name
+
 class Mentor(models.Model):
     mentor = models.OneToOneField(to=User, on_delete=models.CASCADE)
     course = models.ManyToManyField(to=Course, related_name='mentor_course')
