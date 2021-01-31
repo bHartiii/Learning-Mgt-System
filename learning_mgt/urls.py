@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from learning_mgt.views import UpdateStudentDetails, UpdateEducationDetails, Courses, CourseDetails, Mentors, MentorDetails
+from learning_mgt.views import UpdateStudentDetails, UpdateEducationDetails, Courses, CourseDetails, Mentors, MentorCourseMapping, Mentordetails
 
 urlpatterns = [
     path('update-details/', UpdateStudentDetails.as_view(), name='update-details'),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('courses/', Courses.as_view(), name='courses'),
     path('course/<int:id>', CourseDetails.as_view(), name='course'),
     path('mentors/', Mentors.as_view(), name='mentors'),
-    path('mentor/<int:mentor_id>', MentorDetails.as_view(), name='mentor'),
+    path('mentor/<int:id>', Mentordetails.as_view(), name='mentor'),
+    path('mentor-course/<int:mentor_id>', MentorCourseMapping.as_view(), name='mentor-course'),
 ]

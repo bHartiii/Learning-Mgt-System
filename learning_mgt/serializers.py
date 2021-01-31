@@ -17,14 +17,14 @@ class AddCourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ['course_name']
 
-class ListMentorsSerializer(serializers.ModelSerializer):
+class MentorsSerializer(serializers.ModelSerializer):
     mentor = serializers.StringRelatedField(read_only=True)
     course = serializers.StringRelatedField(many=True, read_only=True)
     class Meta:
         model = Mentor
         fields = ['mentor','course']
 
-class MentorSerializer(serializers.ModelSerializer):
+class MentorCourseMappingSerializer(serializers.ModelSerializer):
     mentor = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Mentor

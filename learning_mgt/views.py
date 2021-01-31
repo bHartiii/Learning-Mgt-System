@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorSerializer, ListMentorsSerializer
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer
 from learning_mgt.models import Student, EducationDetails, Course, Mentor
-from authentication.permissions import IsAdmin
+from authentication.permissions import IsAdmin, IsMentor
 
 class Courses(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated, IsAdmin)
@@ -40,16 +40,27 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
         
 class Mentors(generics.ListAPIView):
     permission_classes = (IsAuthenticated, IsAdmin)
-    serializer_class = ListMentorsSerializer
+    serializer_class = MentorsSerializer
     queryset = Mentor.objects.all()
 
     def get_queryset(self):
         return self.queryset.all()
 
-class MentorDetails(generics.GenericAPIView):
+class Mentordetails(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated, IsMentor)
+    serializer_class = MentorsSerializer
+    lookup_field = "id"
+    queryset = Mentor.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role=='Mentor':
+            return self.queryset.filter(mentor=user)
+        elif user.role == 'Admin':
+            return self.queryset.all()
 
-    permission_classes = (IsAuthenticated,IsAdmin)
-    serializer_class = MentorSerializer
+class MentorCourseMapping(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+    serializer_class = MentorCourseMappingSerializer
 
     def put(self, request, mentor_id):
         try:
@@ -69,7 +80,7 @@ class MentorDetails(generics.GenericAPIView):
 
         mentor = Mentor.objects.filter(id=mentor_id)
         if mentor:
-            serializer = ListMentorsSerializer(mentor, many=True)
+            serializer = MentorsSerializer(mentor, many=True)
             return Response({'response':serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'response':'Not Found'}, status=status.HTTP_404_NOT_FOUND)
