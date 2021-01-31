@@ -38,8 +38,15 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
         return Response({'response': 'Course is deleted permanently.'}, status=status.HTTP_204_NO_CONTENT)
         
+class Mentors(generics.ListAPIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+    serializer_class = ListMentorsSerializer
+    queryset = Mentor.objects.all()
 
-class Mentors(generics.GenericAPIView):
+    def get_queryset(self):
+        return self.queryset.all()
+
+class MentorDetails(generics.GenericAPIView):
 
     permission_classes = (IsAuthenticated,)
     serializer_class = MentorSerializer
@@ -53,7 +60,6 @@ class Mentors(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         courses = serializer.validated_data['course']
         for course_data in courses:
-            print(course_data)
             course = Course.objects.get(course_name=course_data)
             mentor.course.add(course.id)
             mentor.save()
