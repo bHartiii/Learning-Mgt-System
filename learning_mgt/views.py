@@ -2,8 +2,27 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer
-from learning_mgt.models import Student, EducationDetails
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer
+from learning_mgt.models import Student, EducationDetails, Course
+from authentication.permissions import IsAdmin
+
+class Courses(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+    serializer_class = AddCourseSerializer
+
+
+    def get_queryset(self):
+        """
+            Returns a list of all create courses
+        """        
+        return Course.objects.all()
+        
+    def perform_create(self, serializer):
+        """
+            create a new course instance
+        """
+        course = serializer.save()
+        return Response({'response': course}, status=status.HTTP_201_CREATED)
 
 class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
@@ -14,11 +33,8 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
             Returns current logged in student profile instance
         """        
         return self.request.user.student
-
-    def get_education_details(self):
-        return EducationDetails.object.get(student=self.get_object())
         
-    def performe_update(self, serializer):
+    def perform_update(self, serializer):
         """
             Save the updated user student instance
         """
@@ -33,7 +49,7 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return EducationDetails.objects.get(student=self.request.user.student)
         
-    def performe_update(self, serializer):
+    def perform_update(self, serializer):
         """
             Save the updated user student instance
         """
