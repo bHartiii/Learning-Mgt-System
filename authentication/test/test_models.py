@@ -16,7 +16,7 @@ class UserTest(TestCase):
 
     def test_create_student_details(self):
         student_details = Student.objects.get(student=self.student)
-        self.assertEqual(self.student_details.contact, "")
+        self.assertEqual(student_details.contact, "")
 
     def test_create_education_details(self):
         student_details = Student.objects.get(student=self.student)

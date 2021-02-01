@@ -17,7 +17,7 @@ from drf_yasg import openapi
 from authentication.permissions import IsAdmin
 
 class UserCreationAPIView(generics.GenericAPIView):
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAuthenticated, IsAdmin,)
     serializer_class = UserCreationSerializer
 
     def post(self, request):
