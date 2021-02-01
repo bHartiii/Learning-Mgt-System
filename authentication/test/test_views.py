@@ -281,3 +281,25 @@ class AuthenticationAPITest(TestCase):
         self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
         response = self.client.post(reverse('reset-password'), data=json.dumps({'email': 'students@gmail.com'}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+### Test cases for Forgot-password : 
+
+    def test_forgot_password_with_valid_payload_without_login(self):
+        response = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forgot_password_with_valid_payload_after_login_by_invalid_credentials(self):
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forgot_password_with_valid_payload_after_login_by_admin_credentials(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forgot_password_with_invalid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('forgot-password'), data=json.dumps(self.invalid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
