@@ -34,6 +34,7 @@ class UserCreationAPIView(generics.GenericAPIView):
         user.save()
         payload = jwt_payload_handler(user)
         token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
+        user_data['token'] = token
         email_data = {
             'email' : user.email,
             'reverse' : 'login',
@@ -44,7 +45,7 @@ class UserCreationAPIView(generics.GenericAPIView):
         }
         Util.email_data(email_data)
         Util.send_email(Util.email_data(email_data))
-        return Response({f'New {user_role} is created successfully!!!!!'}, status=status.HTTP_201_CREATED)
+        return Response(user_data, status=status.HTTP_201_CREATED)
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsAdmin)
@@ -79,18 +80,18 @@ class Login(generics.GenericAPIView):
                 if user_from_token==user and user.first_login == False:
                     user_request = authenticate(username=user_data['username'], password=user_data['password'])
                     login(request, user_request)
-                    response = redirect('/auth/new-password/?token='+token)
+                    response = redirect(reverse('new-password')+'/?token='+token)
                     user.first_login = True
                     user.save()
                     return response
                 else:
-                    return Response({'response':'You can use this link only once !!!'})
+                    return Response({'response':'You can use this link only once !!!'}, status=status.HTTP_400_BAD_REQUEST)
             except jwt.ExpiredSignatureError:
                 return Response({'error':'Link is Expired'}, status=status.HTTP_400_BAD_REQUEST)
             except jwt.exceptions.DecodeError:
                 return Response({'error':'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST) 
         elif not token and user.first_login == False and user.is_superuser==False:
-            return Response({'response':'Please check your email for first login!!!'})
+            return Response({'response':'Please check your email for first login!!!'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             user = authenticate(username=user_data['username'], password=user_data['password'])
             login(request, user)
