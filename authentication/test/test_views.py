@@ -54,6 +54,12 @@ class AuthenticationAPITest(TestCase):
             'username' : 'bharti',
             'password' : 'bharti'
         }
+        self.valid_reset_payload = {
+            'email' : 'admin@gmail.com'
+        }
+        self.invalid_reset_payload = {
+            'email' : ''
+        }
 
 ### Test cases for create-user API : 
 
@@ -188,10 +194,32 @@ class AuthenticationAPITest(TestCase):
             'username' : test_user.data['username'],
             'password' : test_user.data['password'],
         }
-        response = self.client.post(reverse('login')+'/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        response = self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
         user = User.objects.get(username=test_user.data['username'])
         self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertEquals(user.first_login, True)
+
+    def test_login_for_first_time_with_expired_token(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        test_user = self.client.post(reverse('create-user'), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
+        token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImJoYXJ0aSIsImV4cCI6MTYxMjAxNTM2NSwiZW1haWwiOiJtYWxpYmhhcnRpNUBnbWFpbC5jb20ifQ.1MpnGpZUvuW_Nxuyk2O4Kc-H0plMnJQOTQ6-p7hgpHA'
+        test_user_payload = {
+            'username' : test_user.data['username'],
+            'password' : test_user.data['password'],
+        }
+        response = self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_login_for_first_time_with_invalid_token(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        test_user = self.client.post(reverse('create-user'), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
+        token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1c2VybmFtZSI6ImJoYXJ0aSIsImV4cCI6MTYxMjAxNTM2NSwiZW1haWwiOiJtYWxpYmhhcnRpNUBnbWFpbC5jb20ifQ.1MpnGpZUvuW_Nxuyk2O4Kc-H0plMnJQOTQ6-p7hgpHA'
+        test_user_payload = {
+            'username' : test_user.data['username'],
+            'password' : test_user.data['password'],
+        }
+        response = self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_for_second_time_with_token(self):
         self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
@@ -201,9 +229,9 @@ class AuthenticationAPITest(TestCase):
             'username' : test_user.data['username'],
             'password' : test_user.data['password'],
         }
-        self.client.post(reverse('login')+'/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
         self.client.get(reverse('logout'), content_type=CONTENT_TYPE)
-        response = self.client.post(reverse('login')+'/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        response = self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
         user = User.objects.get(username=test_user.data['username'])
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(user.first_login, True)
@@ -216,9 +244,40 @@ class AuthenticationAPITest(TestCase):
             'username' : test_user.data['username'],
             'password' : test_user.data['password'],
         }
-        self.client.post(reverse('login')+'/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
+        self.client.post('/auth/login/?token='+token, data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
         self.client.get(reverse('logout'), content_type=CONTENT_TYPE)
         response = self.client.post(reverse('login'), data=json.dumps(test_user_payload), content_type=CONTENT_TYPE)
         user = User.objects.get(username=test_user.data['username'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEquals(user.first_login, True)
+
+### Test cases for Reset-password : 
+
+    def test_reset_password_with_valid_payload_without_login(self):
+        response = self.client.post(reverse('reset-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_reset_password_with_valid_payload_after_login_by_invalid_credentials(self):
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('reset-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_reset_password_with_valid_payload_after_login_by_admin_credentials(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('reset-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_reset_password_with_invalid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('reset-password'), data=json.dumps(self.invalid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_reset_password_of_other_user_with_valid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('reset-password'), data=json.dumps({'email': 'student@gmail.com'}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_reset_password_by_using_wrong_email_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('reset-password'), data=json.dumps({'email': 'students@gmail.com'}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from django.contrib.auth import logout, login, authenticate
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from authentication.serializers import UserCreationSerializer, LoginSerializer, ResetPasswordSerializer, NewPasswordSerializer
+from authentication.serializers import UserCreationSerializer,UpdateUserSerializer, LoginSerializer, ResetPasswordSerializer, NewPasswordSerializer
 from authentication.models import User
 import jwt
 from rest_framework_jwt.utils import jwt_payload_handler
@@ -49,7 +49,7 @@ class UserCreationAPIView(generics.GenericAPIView):
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsAdmin)
-    serializer_class = UserCreationSerializer
+    serializer_class = UpdateUserSerializer
     queryset = User.objects.all()
     lookup_field = "id"
 
@@ -80,7 +80,7 @@ class Login(generics.GenericAPIView):
                 if user_from_token==user and user.first_login == False:
                     user_request = authenticate(username=user_data['username'], password=user_data['password'])
                     login(request, user_request)
-                    response = redirect(reverse('new-password')+'/?token='+token)
+                    response = redirect('auth/new-password/?token='+token)
                     user.first_login = True
                     user.save()
                     return response
@@ -137,11 +137,14 @@ class ResetPassword(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
-        user = User.objects.get(email=user_data['email']) 
+        try:
+            user = User.objects.get(email=user_data['email']) 
+        except User.DoesNotExist:
+            return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST)
         if user == request.user:
             payload = jwt_payload_handler(user)
             token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-        
+            user_data['token'] = token
             email_data = {
                 'email' : user.email,
                 'reverse' : 'new-password',
@@ -154,7 +157,7 @@ class ResetPassword(generics.GenericAPIView):
             Util.send_email(Util.email_data(email_data))
             return Response(user_data, status=status.HTTP_200_OK)
         else:
-            return Response({'response':'This mail is not registered for this account!!!'})
+            return Response({'response':'This mail is not registered for this account!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class NewPassword(generics.GenericAPIView):
