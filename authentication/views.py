@@ -118,7 +118,7 @@ class ForgotPassword(generics.GenericAPIView):
             return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST) 
         payload = jwt_payload_handler(user)
         token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-            
+        user_data['token'] = token
         email_data = {
             'email' : user.email,
             'reverse' : 'new-password',

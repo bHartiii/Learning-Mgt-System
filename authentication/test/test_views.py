@@ -60,6 +60,14 @@ class AuthenticationAPITest(TestCase):
         self.invalid_reset_payload = {
             'email' : ''
         }
+        self.valid_new_password_payload = {
+            'password' : 'newpass',
+            'password2' : 'newpass'
+        }
+        self.invalid_new_password_payload = {
+            'password' : 'newpass',
+            'password2' : ''
+        }
 
 ### Test cases for create-user API : 
 
@@ -302,4 +310,34 @@ class AuthenticationAPITest(TestCase):
     def test_forgot_password_with_invalid_payload_after_login(self):
         self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
         response = self.client.post(reverse('forgot-password'), data=json.dumps(self.invalid_reset_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+### Test cases for new-password : 
+
+    def test_new_password_with_valid_payload_without_login(self):
+        res = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        token = res.data['token']
+        response = self.client.put('/auth/new-password/?token='+token, data=json.dumps(self.valid_new_password_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_new_password_for_reset_password_with_valid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        res = self.client.post(reverse('reset-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        token = res.data['token']
+        response = self.client.put('/auth/new-password/?token='+token, data=json.dumps(self.valid_new_password_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_new_password_for_forgot_password_with_valid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        res = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        token = res.data['token']
+        response = self.client.put('/auth/new-password/?token='+token, data=json.dumps(self.valid_new_password_payload), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_new_password_with_invalid_payload_after_login(self):
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        res = self.client.post(reverse('forgot-password'), data=json.dumps(self.valid_reset_payload), content_type=CONTENT_TYPE)
+        token = res.data['token']
+        response = self.client.put('/auth/new-password/?token='+token, data=json.dumps(self.invalid_new_password_payload), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
