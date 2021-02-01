@@ -58,7 +58,7 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete()
-        return Response({'response': f'{instance.role} is deleted successfully!!!'})
+        return Response({'response': f'{instance.role} is deleted successfully!!!'}, status=status.HTTP_204_NO_CONTENT)
 
 class Login(generics.GenericAPIView):
     permission_classes = (AllowAny,)
