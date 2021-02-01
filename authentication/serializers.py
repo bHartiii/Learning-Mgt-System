@@ -8,6 +8,12 @@ class UserCreationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
 
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
+        extra_kwargs = {'username': {'read_only': True},'password': {'read_only': True}}
+
 class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6)
     username = serializers.CharField(max_length=255, min_length=3)
