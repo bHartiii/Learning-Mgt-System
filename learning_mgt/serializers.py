@@ -36,6 +36,15 @@ class MentorStudentMappingSerializer(serializers.ModelSerializer):
         model = MentorStudent
         fields = ['student', 'course', 'mentor']
 
+class MentorStudentListSerializer(serializers.ModelSerializer):
+    student = serializers.StringRelatedField(read_only=True)
+    course = serializers.StringRelatedField(read_only=True)
+    mentor = serializers.StringRelatedField(read_only=True)
+ 
+    class Meta:
+        model = MentorStudent
+        fields = ['student', 'course', 'mentor']
+
 
 
 

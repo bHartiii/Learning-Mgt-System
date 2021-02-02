@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer, MentorStudentListSerializer
 from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent
 from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin
 from authentication.models import User
@@ -150,6 +150,10 @@ class MentorStudentMapping(generics.GenericAPIView):
 
     def get(self,request):
         students = self.queryset.all()
-        serializer = self.serializer_class(students, many=True)
+        serializer = MentorStudentListSerializer(students, many=True)
         return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+
+
+
+
         
