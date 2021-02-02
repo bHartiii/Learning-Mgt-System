@@ -17,7 +17,7 @@ from drf_yasg import openapi
 from authentication.permissions import IsAdmin
 
 class UserCreationAPIView(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin,)
+    permission_classes = (IsAuthenticated, IsAdmin)
     serializer_class = UserCreationSerializer
 
     def post(self, request):
@@ -52,6 +52,13 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateUserSerializer
     queryset = User.objects.all()
     lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return self.queryset.all()
+        else:
+            return self.queryset.filter(id=user)
 
     def perform_update(self, serializer):
         user = serializer.save()

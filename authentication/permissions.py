@@ -1,34 +1,30 @@
 from rest_framework import permissions
 
 SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+class OnlyAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'Admin'
+
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        # if request.method in SAFE_METHODS:
-        return request.user.role == 'Admin'
+        if request.method in SAFE_METHODS:
+            return request.user.role == 'Admin' or request.user.role == 'Mentor' or request.user.role == 'Student'
+        else:
+            return request.user.role == 'Admin'
+
 
 class IsMentor(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.role == 'Admin' or request.user.role == 'Mentor':
-            return True
+        if request.method in SAFE_METHODS:
+            return request.user.role == 'Admin' or request.user.role == 'Mentor'
         else:
-            return False
+            return request.user.role == 'Admin'
 
-SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
 class IsStudent(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
-            return True
+            return request.user.role == 'Admin' or request.user.role == 'Mentor' or request.user.role == 'Student'
         else:
-            if request.user.role == 'Student':
-                return True
-            else:
-                return False
+            return request.user.role == 'Student'
 
-    # def has_object_permission(self, request, view, obj):
-
-    #     if request.user.role == 'Student' and obj.student==request.user:
-    #         return True
-    #     else:
-    #         return False
         

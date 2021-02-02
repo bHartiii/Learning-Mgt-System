@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer
 from learning_mgt.models import Student, EducationDetails, Course, Mentor
-from authentication.permissions import IsAdmin, IsMentor, IsStudent
+from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin
 
 class Courses(generics.ListCreateAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin)
+    permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = AddCourseSerializer
 
 
@@ -25,7 +25,7 @@ class Courses(generics.ListCreateAPIView):
         return Response({'response': course}, status=status.HTTP_201_CREATED)
 
 class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin)
+    permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = AddCourseSerializer
     queryset = Course.objects.all()
     lookup_field = "id"
@@ -39,28 +39,25 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
         return Response({'response': 'Course is deleted permanently.'}, status=status.HTTP_204_NO_CONTENT)
         
 class Mentors(generics.ListAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin)
+    permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = MentorsSerializer
     queryset = Mentor.objects.all()
 
     def get_queryset(self):
         return self.queryset.all()
 
-class Mentordetails(generics.RetrieveAPIView):
+
+class MentorCourseMapping(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, IsMentor)
-    serializer_class = MentorsSerializer
-    lookup_field = "id"
+    serializer_class = MentorCourseMappingSerializer
     queryset = Mentor.objects.all()
-    def get_queryset(self):
+    
+    def get_queryset(self, mentor_id):
         user = self.request.user
         if user.role=='Mentor':
             return self.queryset.filter(mentor=user)
         elif user.role == 'Admin':
-            return self.queryset.all()
-
-class MentorCourseMapping(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin)
-    serializer_class = MentorCourseMappingSerializer
+            return self.queryset.filter(id=mentor_id)
 
     def put(self, request, mentor_id):
         try:
@@ -78,7 +75,7 @@ class MentorCourseMapping(generics.GenericAPIView):
 
     def get(self,request, mentor_id):
 
-        mentor = Mentor.objects.filter(id=mentor_id)
+        mentor = self.get_queryset(mentor_id)
         if mentor:
             serializer = MentorsSerializer(mentor, many=True)
             return Response({'response':serializer.data}, status=status.HTTP_200_OK)
