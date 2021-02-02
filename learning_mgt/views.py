@@ -97,7 +97,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
             Returns current logged in student profile instance
         """        
         if self.request.user.role == 'Student':
-            return self.queryset.filter(id = self.kwargs[self.lookup_field], student=self.request.user)
+            return self.queryset.filter(student=self.request.user)
         else :
             return self.queryset.all()
 
@@ -120,7 +120,7 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
             Returns current logged in student profile instance
         """        
         if self.request.user.role == 'Student':
-            return self.queryset.filter(id = self.kwargs[self.lookup_field], student=self.request.user.student)
+            return self.queryset.filter(student=self.request.user.student)
         else :
             return self.queryset.all()
         

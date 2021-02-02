@@ -1,7 +1,9 @@
 from rest_framework import permissions
 
+SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
+        # if request.method in SAFE_METHODS:
         return request.user.role == 'Admin'
 
 class IsMentor(permissions.BasePermission):
@@ -22,4 +24,11 @@ class IsStudent(permissions.BasePermission):
                 return True
             else:
                 return False
+
+    # def has_object_permission(self, request, view, obj):
+
+    #     if request.user.role == 'Student' and obj.student==request.user:
+    #         return True
+    #     else:
+    #         return False
         
