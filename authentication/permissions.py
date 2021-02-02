@@ -10,3 +10,16 @@ class IsMentor(permissions.BasePermission):
             return True
         else:
             return False
+
+SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+class IsStudent(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        else:
+            if request.user.role == 'Student':
+                return True
+            else:
+                return False
+        
