@@ -2,14 +2,61 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer
-from learning_mgt.models import Student, EducationDetails, Course, Mentor
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer
+from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent
 from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin
+from authentication.models import User
+
+
+class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated, IsStudent)
+    serializer_class = UpdateStudentDetailsSerializer
+    queryset = Student.objects.all()
+    lookup_field = "id"
+
+    def get_queryset(self):
+        """
+            Returns current logged in student profile instance
+        """        
+        if self.request.user.role == 'Student':
+            return self.queryset.filter(student=self.request.user)
+        else :
+            return self.queryset.all()
+
+    def perform_update(self, serializer):
+        """
+            Save the updated user student instance
+        """
+        student = serializer.save(student=self.request.user)
+        return Response({'response': student}, status=status.HTTP_200_OK)
+
+
+class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated, IsStudent)
+    serializer_class = UpdateEducationDetailsSerializer
+    queryset = EducationDetails.objects.all()
+    lookup_field = "id"
+
+    def get_queryset(self):
+        """
+            Returns current logged in student profile instance
+        """        
+        if self.request.user.role == 'Student':
+            return self.queryset.filter(student=self.request.user.student)
+        else :
+            return self.queryset.all()
+        
+    def perform_update(self, serializer):
+        """
+            Save the updated user student instance
+        """
+        student = serializer.save(student=self.request.user.student)
+        return Response({'response': student}, status=status.HTTP_200_OK)
+
 
 class Courses(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = AddCourseSerializer
-
 
     def get_queryset(self):
         """
@@ -38,6 +85,7 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
         return Response({'response': 'Course is deleted permanently.'}, status=status.HTTP_204_NO_CONTENT)
         
+
 class Mentors(generics.ListAPIView):
     permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = MentorsSerializer
@@ -83,47 +131,25 @@ class MentorCourseMapping(generics.GenericAPIView):
             return Response({'response':'Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated, IsStudent)
-    serializer_class = UpdateStudentDetailsSerializer
-    queryset = Student.objects.all()
-    lookup_field = "id"
+class MentorStudentMapping(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated, OnlyAdmin)
+    serializer_class = MentorStudentMappingSerializer
+    queryset = MentorStudent.objects.all()
 
-    def get_queryset(self):
-        """
-            Returns current logged in student profile instance
-        """        
-        if self.request.user.role == 'Student':
-            return self.queryset.filter(student=self.request.user)
-        else :
-            return self.queryset.all()
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mentor_data = serializer.validated_data['mentor']
+        course_data = serializer.validated_data['course']
+        mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
+        if course_data in mentor.course.all():
+            serializer.save()
+            return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_update(self, serializer):
-        """
-            Save the updated user student instance
-        """
-        student = serializer.save(student=self.request.user)
-        return Response({'response': student}, status=status.HTTP_200_OK)
+    def get(self,request):
+        students = self.queryset.all()
+        serializer = self.serializer_class(students, many=True)
+        return Response({'response':serializer.data}, status=status.HTTP_200_OK)
         
-
-class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated, IsStudent)
-    serializer_class = UpdateEducationDetailsSerializer
-    queryset = EducationDetails.objects.all()
-    lookup_field = "id"
-
-    def get_queryset(self):
-        """
-            Returns current logged in student profile instance
-        """        
-        if self.request.user.role == 'Student':
-            return self.queryset.filter(student=self.request.user.student)
-        else :
-            return self.queryset.all()
-        
-    def perform_update(self, serializer):
-        """
-            Save the updated user student instance
-        """
-        student = serializer.save(student=self.request.user.student)
-        return Response({'response': student}, status=status.HTTP_200_OK)

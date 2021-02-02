@@ -15,6 +15,9 @@ class Mentor(models.Model):
     createdAt = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
 
+    def __str__(self):
+        return self.mentor.email
+
 class Student(models.Model):
     student = models.OneToOneField(to=User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='profile/picture',max_length=255, null=True, blank=True)
@@ -28,6 +31,8 @@ class Student(models.Model):
     create_time = models.DateField(auto_now_add=True)
     update_time = models.DateField(auto_now=True)
 
+    def __str__(self):
+        return self.student.get_full_name()
 
 class EducationDetails(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
@@ -39,7 +44,7 @@ class EducationDetails(models.Model):
 
 
 class MentorStudent(models.Model):
-    student = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
     course = models.ForeignKey(to=Course, on_delete=models.CASCADE)
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
 

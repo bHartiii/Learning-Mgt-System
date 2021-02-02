@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from learning_mgt.models import Student, EducationDetails, Course, Mentor
+from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent
 
 
 class UpdateStudentDetailsSerializer(serializers.ModelSerializer):   
@@ -29,3 +29,13 @@ class MentorCourseMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mentor
         fields = ['mentor','course']
+
+class MentorStudentMappingSerializer(serializers.ModelSerializer):
+ 
+    class Meta:
+        model = MentorStudent
+        fields = ['student', 'course', 'mentor']
+
+
+
+
