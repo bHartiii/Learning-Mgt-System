@@ -20,6 +20,13 @@ class IsMentor(permissions.BasePermission):
         else:
             return request.user.role == 'Admin'
 
+class IsMentorOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return request.user.role == 'Admin' or request.user.role == 'Mentor' or request.user.role == 'Student'
+        else:
+            return request.user.role == 'Admin' or request.user.role == 'Mentor'
+
 class IsStudent(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:

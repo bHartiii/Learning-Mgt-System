@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer, MentorStudentUpdateMappingSerializer, MentorStudentListSerializer
-from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent
-from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer, MentorStudentUpdateMappingSerializer, MentorStudentListSerializer, PerformanceSerializer
+from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent, Performance
+from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin, IsMentorOrAdmin
 from authentication.models import User
 
 
@@ -191,7 +191,14 @@ class MentorStudentDetails(generics.GenericAPIView):
         students.delete()
         return Response({'response': 'Record is deleted successfully!!'}, status=status.HTTP_204_NO_CONTENT)
 
-
-
-
-        
+class PerformanceAPI(generics.ListAPIView):
+    permission_classes = (IsAuthenticated, IsMentorOrAdmin)
+    serializer_class = PerformanceSerializer
+    queryset = Performance.objects.all()
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return self.queryset.all()
+        else:
+            return self.queryset.filter(mentor=user)
