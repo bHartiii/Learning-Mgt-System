@@ -44,9 +44,12 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
         """
             Returns current logged in student profile instance
         """        
-        if self.request.user.role == 'Student':
-            return self.queryset.filter(student=self.request.user.student)
-        else :
+        role = self.request.user.role
+        if role == 'Student':
+            return self.queryset.filter(student=self.request.user)
+        elif role == "Mentor" :
+            return self.queryset.filter(mentorstudent=self.request.user.id)
+        else:
             return self.queryset.all()
         
     def perform_update(self, serializer):
