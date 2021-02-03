@@ -4,7 +4,7 @@ from learning_mgt.views import UpdateStudentDetails, UpdateEducationDetails, Cou
 
 urlpatterns = [
     path('update-details/<int:id>', UpdateStudentDetails.as_view(), name='update-details'),
-    path('update-edu-details/', UpdateEducationDetails.as_view(), name='update-edu-details'),
+    path('update-edu-details/<int:id>', UpdateEducationDetails.as_view(), name='update-edu-details'),
     path('courses/', Courses.as_view(), name='courses'),
     path('course/<int:id>', CourseDetails.as_view(), name='course'),
     path('mentors/', Mentors.as_view(), name='mentors'),

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer, MentorStudentListSerializer
+from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEducationDetailsSerializer, AddCourseSerializer, MentorCourseMappingSerializer, MentorsSerializer, MentorStudentMappingSerializer, MentorStudentUpdateMappingSerializer, MentorStudentListSerializer
 from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent
 from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin
 from authentication.models import User
@@ -122,8 +122,10 @@ class MentorCourseMapping(generics.GenericAPIView):
         return Response({'response':'Course added successfully.'}, status=status.HTTP_200_OK)
 
     def get(self,request, mentor_id):
-
-        mentor = self.get_queryset(mentor_id)
+        try:
+            mentor = self.get_queryset(mentor_id)
+        except Mentor.DoesNotExist:
+            return Response({'response':'This mentor does not exist'}, status=status.HTTP_404_NOT_FOUND)
         if mentor:
             serializer = MentorsSerializer(mentor, many=True)
             return Response({'response':serializer.data}, status=status.HTTP_200_OK)
@@ -155,7 +157,7 @@ class MentorStudentMapping(generics.GenericAPIView):
 
 class MentorStudentDetails(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, IsMentor)
-    serializer_class = MentorStudentMappingSerializer
+    serializer_class = MentorStudentUpdateMappingSerializer
     
     def get_queryset(self, search_id):
         try:
@@ -172,7 +174,9 @@ class MentorStudentDetails(generics.GenericAPIView):
         course_data = serializer.validated_data['course']
         mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
         if course_data in mentor.course.all():
-            serializer.save()
+            students.course = course_data
+            students.mentor = mentor
+            students.save()
             return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
         else:
             return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
