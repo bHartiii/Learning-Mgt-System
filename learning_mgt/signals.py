@@ -2,7 +2,7 @@ from authentication.models import User
 from learning_mgt.models import Student, EducationDetails, Mentor, MentorStudent, Performance
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from authentication.utils import EmailMessage
+from authentication.utils import Util
 
 @receiver(post_save, sender=User)
 def create_student_details(sender, instance, created, **kwargs):
@@ -23,3 +23,9 @@ def create_student_details(sender, instance, created, **kwargs):
 def create_performance_instance(sender, instance, craeted, **kwargs):
     if craeted:
         Performance.objects.create(student=instance.student, course=instance.course, mentor=instance.mentor)
+
+@receiver(post_save, sender=Performance)
+def send_performance_email(sender, instance, created, **kwargs):
+    if not created:
+        email = Util.email_data(data)
+        Util.send_email(email)
