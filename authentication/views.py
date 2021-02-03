@@ -43,8 +43,8 @@ class UserCreationAPIView(generics.GenericAPIView):
             'subject' : 'Registration is successful!!!!!!',
             'site' : get_current_site(request).domain
         }
-        Util.email_data(email_data)
-        Util.send_email(Util.email_data(email_data))
+        Util.email_data_with_token(email_data)
+        Util.send_email(Util.email_data_with_token(email_data))
         return Response(user_data, status=status.HTTP_201_CREATED)
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
@@ -134,8 +134,8 @@ class ForgotPassword(generics.GenericAPIView):
             'subject' : 'Reset password Link',
             'site' : get_current_site(request).domain
         }
-        Util.email_data(email_data)
-        Util.send_email(Util.email_data(email_data))
+        Util.email_data_with_token(email_data)
+        Util.send_email(Util.email_data_with_token(email_data))
         return Response(user_data, status=status.HTTP_200_OK)
 
 
@@ -163,8 +163,8 @@ class ResetPassword(generics.GenericAPIView):
                 'subject' : 'Reset password Link',
                 'site' : get_current_site(request).domain
             }
-            Util.email_data(email_data)
-            Util.send_email(Util.email_data(email_data))
+            Util.email_data_with_token(email_data)
+            Util.send_email(Util.email_data_with_token(email_data))
             return Response(user_data, status=status.HTTP_200_OK)
         else:
             return Response({'response':'This mail is not registered for this account!!!'}, status=status.HTTP_400_BAD_REQUEST)

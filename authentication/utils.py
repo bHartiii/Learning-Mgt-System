@@ -5,13 +5,20 @@ import pyshorteners
 
 class Util:
     @staticmethod
-    def email_data(email_data):
+    def email_data_with_token(email_data):
         current_site = email_data['site']
         relative_link = reverse(email_data['reverse'])
         link = 'http://'+current_site+relative_link+"?token="+str(email_data['token'])
         shortener = pyshorteners.Shortener()
         short_url = shortener.tinyurl.short(link)
         email_body = email_data['message']+'\n'+short_url
+        email_subject = email_data['subject']
+        data = {'email_body':email_body ,'to_email':email_data['email'], 'email_subject':email_subject}
+        return data
+
+    @staticmethod
+    def email_data_generic(email_data):
+        email_body = email_data['message']
         email_subject = email_data['subject']
         data = {'email_body':email_body ,'to_email':email_data['email'], 'email_subject':email_subject}
         return data
