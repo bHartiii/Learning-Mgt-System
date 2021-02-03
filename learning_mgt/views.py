@@ -170,7 +170,10 @@ class MentorStudentDetails(generics.GenericAPIView):
     
     def get_queryset(self, search_id):
         try:
-            students = MentorStudent.objects.get(id=search_id)
+            if self.request.user.role == 'Admin':
+                students = MentorStudent.objects.get(id=search_id)
+            else:
+                students = MentorStudent.objects.get(id=search_id, mentor=self.request.user.id)
         except MentorStudent.DoesNotExist:
             return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
         return students
