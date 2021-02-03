@@ -87,7 +87,7 @@ class Login(generics.GenericAPIView):
                 if user_from_token==user and user.first_login == False:
                     user_request = authenticate(username=user_data['username'], password=user_data['password'])
                     login(request, user_request)
-                    response = redirect('auth/new-password/?token='+token)
+                    response = redirect('/auth/new-password/?token='+token)
                     user.first_login = True
                     user.save()
                     return response
