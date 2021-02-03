@@ -39,8 +39,8 @@ class EducationDetails(models.Model):
     course = models.CharField(max_length=50)
     institution = models.CharField(max_length=50)
     percentage = models.FloatField(default=0.0)
-    joined_at = models.DateField(auto_now_add=True)
-    till = models.DateField(auto_now=True)
+    joined_at = models.DateField(default=None)
+    till = models.DateField(default=None)
 
 
 class MentorStudent(models.Model):
