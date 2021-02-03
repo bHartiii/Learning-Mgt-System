@@ -202,3 +202,17 @@ class PerformanceAPI(generics.ListAPIView):
             return self.queryset.all()
         else:
             return self.queryset.filter(mentor=user)
+
+class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated, IsMentorOrAdmin)
+    serializer_class = PerformanceSerializer
+    queryset = Performance.objects.all()
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return self.queryset.all()
+        else:
+            return self.queryset.filter(mentor=user)
+            
