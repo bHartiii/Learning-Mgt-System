@@ -18,9 +18,15 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         """
             Returns current logged in student profile instance
         """        
-        if self.request.user.role == 'Student':
+        role = self.request.user.role
+        if role == 'Student':
             return self.queryset.filter(student=self.request.user)
-        else :
+        elif role == "Mentor" :
+            try:
+                return self.queryset.filter(mentorstudent=self.request.user.id)
+            except Student.DoesNotExist:
+                return Response({'response':'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
             return self.queryset.all()
 
     def perform_update(self, serializer):
@@ -215,4 +221,4 @@ class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
             return self.queryset.all()
         else:
             return self.queryset.filter(mentor=user)
-            
+
