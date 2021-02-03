@@ -34,6 +34,9 @@ class Student(models.Model):
     def __str__(self):
         return self.student.email
 
+    def get_full_name(self):
+        return self.student.get_full_name()
+
 class EducationDetails(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
     course = models.CharField(max_length=50)
@@ -52,5 +55,5 @@ class Performance(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
     course = models.ForeignKey(to=Course, on_delete=models.CASCADE)
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
-    current_score = models.FloatField(blank=False)
+    current_score = models.FloatField(blank=True, null=True)
     updated_at = models.DateField(auto_now=True)

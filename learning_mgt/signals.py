@@ -20,8 +20,8 @@ def create_student_details(sender, instance, created, **kwargs):
             Mentor.objects.create(mentor=instance)
 
 @receiver(post_save, sender=MentorStudent)
-def create_performance_instance(sender, instance, craeted, **kwargs):
-    if craeted:
+def create_performance_instance(sender, instance, created, **kwargs):
+    if created:
         Performance.objects.create(student=instance.student, course=instance.course, mentor=instance.mentor)
 
 @receiver(post_save, sender=Performance)
@@ -29,7 +29,7 @@ def send_performance_email(sender, instance, created, **kwargs):
     if not created:
         data = {
             'email' : instance.student,
-            'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+instance.current_score,
+            'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+str(instance.current_score),
             'subject' : 'Performance Report',
         }
         email = Util.email_data_generic(data)
