@@ -22,10 +22,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         if role == 'Student':
             return self.queryset.filter(student=self.request.user)
         elif role == "Mentor" :
-            try:
-                return self.queryset.filter(mentorstudent=self.request.user.id)
-            except Student.DoesNotExist:
-                return Response({'response':'Not found'}, status=status.HTTP_404_NOT_FOUND)
+            return self.queryset.filter(mentorstudent=self.request.user.id)
         else:
             return self.queryset.all()
 
