@@ -32,7 +32,7 @@ class Student(models.Model):
     update_time = models.DateField(auto_now=True)
 
     def __str__(self):
-        return self.student.get_full_name()
+        return self.student.email
 
 class EducationDetails(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)

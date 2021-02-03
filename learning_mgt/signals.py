@@ -27,5 +27,10 @@ def create_performance_instance(sender, instance, craeted, **kwargs):
 @receiver(post_save, sender=Performance)
 def send_performance_email(sender, instance, created, **kwargs):
     if not created:
-        email = Util.email_data(data)
+        data = {
+            'email' : instance.student,
+            'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+instance.current_score,
+            'subject' : 'Performance Report',
+        }
+        email = Util.email_data_generic(data)
         Util.send_email(email)
