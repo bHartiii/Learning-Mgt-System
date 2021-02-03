@@ -109,7 +109,7 @@ class MentorCourseMapping(generics.GenericAPIView):
     def get_queryset(self, mentor_id):
         user = self.request.user
         if user.role=='Mentor':
-            return self.queryset.filter(mentor=user)
+            return self.queryset.filter(mentor=user.id)
         elif user.role == 'Admin':
             return self.queryset.filter(id=mentor_id)
 
@@ -140,7 +140,7 @@ class MentorCourseMapping(generics.GenericAPIView):
 
 
 class MentorStudentMapping(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated, OnlyAdmin)
+    permission_classes = (IsAuthenticated, IsMentor)
     serializer_class = MentorStudentMappingSerializer
     queryset = MentorStudent.objects.all()
 
@@ -157,7 +157,10 @@ class MentorStudentMapping(generics.GenericAPIView):
             return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self,request):
-        students = self.queryset.all()
+        if request.user.role == 'Admin':
+            students = self.queryset.all()
+        else:
+            students = self.queryset.filter(mentor=request.user.id)
         serializer = MentorStudentListSerializer(students, many=True)
         return Response({'response':serializer.data}, status=status.HTTP_200_OK)
 
@@ -207,7 +210,7 @@ class PerformanceAPI(generics.ListAPIView):
         if user.role == 'Admin':
             return self.queryset.all()
         else:
-            return self.queryset.filter(mentor=user)
+            return self.queryset.filter(mentor=user.id)
 
 class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsMentorOrAdmin)
@@ -220,5 +223,5 @@ class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
         if user.role == 'Admin':
             return self.queryset.all()
         else:
-            return self.queryset.filter(mentor=user)
+            return self.queryset.filter(mentor=user.id)
 
