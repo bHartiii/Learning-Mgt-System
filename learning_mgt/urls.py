@@ -12,5 +12,5 @@ urlpatterns = [
     path('mentor-course/<int:mentor_id>', MentorCourseMapping.as_view(), name='mentor-course'),
     path('mentor-student/<int:search_id>', MentorStudentDetails.as_view(), name='mentor-student-details'),
     path('performance/', PerformanceAPI.as_view(), name='performance'),
-    path('performance-details/<int:id>', PerformanceDetailsAPI.as_view(), name='performance-details')
+    path('performance/<int:id>', PerformanceDetailsAPI.as_view(), name='performance-details')
 ]
