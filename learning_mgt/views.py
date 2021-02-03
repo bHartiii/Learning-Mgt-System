@@ -153,6 +153,43 @@ class MentorStudentMapping(generics.GenericAPIView):
         serializer = MentorStudentListSerializer(students, many=True)
         return Response({'response':serializer.data}, status=status.HTTP_200_OK)
 
+class MentorStudentDetails(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated, IsMentor)
+    serializer_class = MentorStudentMappingSerializer
+    
+
+    def put(self, request, search_id):
+        try:
+            student = MentorStudent.objects.get(id=search_id)
+        except MentorStudent.DoesNotExist:
+            return Response({'response':'This record does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mentor_data = serializer.validated_data['mentor']
+        course_data = serializer.validated_data['course']
+        mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
+        if course_data in mentor.course.all():
+            serializer.save()
+            return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self,request,search_id ):
+        try:
+            students = MentorStudent.objects.get(id=search_id)
+        except MentorStudent.DoesNotExist:
+            return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = MentorStudentListSerializer(students)
+        return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+
+    def delete(self, request, search_id):
+        try:
+            students = MentorStudent.objects.get(id=search_id)
+        except MentorStudent.DoesNotExist:
+            return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        students.delete()
+        return Response({'response': 'Record is deleted successfully!!'}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 
