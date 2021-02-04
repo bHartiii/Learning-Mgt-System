@@ -41,6 +41,17 @@ class UserSerializersTest(TestCase):
         self.assertEqual(data['email'], self.user_attributes['email'])
         self.assertEqual(data['mobile_number'], self.user_attributes['mobile_number'])
 
+    def test_user_creation_serializer_empty_fields_content(self):
+        self.user_creation_serializer_data['first_name'] = ''
+        self.user_creation_serializer_data['last_name'] = ''
+        self.user_creation_serializer_data['email'] = ''
+        self.user_creation_serializer_data['mobile_number'] = ''
+        self.user_creation_serializer_data['username'] = ''
+        self.user_creation_serializer_data['password'] = ''
+        serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['first_name', 'last_name', 'email', 'mobile_number', 'username', 'password']))
+
     def test_user_creation_serializer__min_length_of_password_content(self):
         self.user_creation_serializer_data['password'] = 'bh'
         serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
@@ -55,6 +66,12 @@ class UserSerializersTest(TestCase):
 
     def test_user_creation_serializer_mobile_number_content_min_length(self):
         self.user_creation_serializer_data['mobile_number'] = '1234'
+        serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(set(serializer.errors), set(['mobile_number']))
+
+    def test_user_creation_serializer_mobile_number_content_type(self):
+        self.user_creation_serializer_data['mobile_number'] = 'bhartimali'
         serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
         self.assertFalse(serializer.is_valid())
         self.assertEqual(set(serializer.errors), set(['mobile_number']))
@@ -80,5 +97,6 @@ class UserSerializersTest(TestCase):
     def test_user_creation_serializer_invalid_email_content(self):
         self.user_creation_serializer_data['email'] = 'user@com'
         serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
-        self.assertFalse(serializer.is_valid())
+        self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
+
