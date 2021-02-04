@@ -10,13 +10,17 @@ class UserCreationSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(max_length=50,  min_length=3)
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
+        fields = ['id','username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
+        extra_kwargs = {'id':{'read_only':True}}
 
 class UpdateUserSerializer(serializers.ModelSerializer):
+    mobile_number = serializers.RegexField("^[0-9]{10}$") 
+    first_name = serializers.CharField(max_length=50,  min_length=3)
+    last_name = serializers.CharField(max_length=50,  min_length=3)
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
-        extra_kwargs = {'username': {'read_only': True},'password': {'read_only': True}}
+        fields = ['id','username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
+        extra_kwargs = {'username': {'read_only': True},'password': {'read_only': True}, 'id':{'read_only':True}}
 
 class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6)
