@@ -21,12 +21,17 @@ def create_student_details(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=MentorStudent)
 def create_performance_instance(sender, instance, created, **kwargs):
-    if created:
+    if created:        
         Performance.objects.create(student=instance.student, course=instance.course, mentor=instance.mentor)
+    else:
+        performance = Performance.objects.get(student=instance.student)
+        performance.course=instance.course
+        performance.mentor=instance.mentor
+        performance.save()
 
 @receiver(post_save, sender=Performance)
-def send_performance_email(sender, instance, created, **kwargs):
-    if not created:
+def send_performance_email(sender, instance, created, update_fields, **kwargs):
+    if not created and update_fields == instance.current_score:
         data = {
             'email' : instance.student,
             'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+str(instance.current_score),

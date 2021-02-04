@@ -160,7 +160,7 @@ class MentorStudentMapping(generics.GenericAPIView):
         if request.user.role == 'Admin':
             students = self.queryset.all()
         else:
-            students = self.queryset.filter(mentor=request.user.id)
+            students = self.queryset.filter(mentor=Mentor.objects.get(mentor=request.user))
         serializer = MentorStudentListSerializer(students, many=True)
         return Response({'response':serializer.data}, status=status.HTTP_200_OK)
 
@@ -173,7 +173,7 @@ class MentorStudentDetails(generics.GenericAPIView):
             if self.request.user.role == 'Admin':
                 students = MentorStudent.objects.get(id=search_id)
             else:
-                students = MentorStudent.objects.get(id=search_id, mentor=self.request.user.id)
+                students = MentorStudent.objects.get(id=search_id, mentor=Mentor.objects.get(mentor=self.request.user))
         except MentorStudent.DoesNotExist:
             return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
         return students
