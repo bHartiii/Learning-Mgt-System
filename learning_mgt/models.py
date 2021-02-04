@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 from authentication.models import User
 
 class Course(models.Model):
@@ -43,13 +44,21 @@ class Student(models.Model):
     def get_full_name(self):
         return self.student.get_full_name()
 
+
 class EducationDetails(models.Model):
-    student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
+
+    def year_choices():
+        return ((r,r) for r in range(1990, datetime.date.today().year+1))
+
+    def current_year():
+        return datetime.date.today().year
+
+    student = models.ForeignKey(to=Student, on_delete=models.CASCADE)
     course = models.CharField(max_length=50)
     institution = models.CharField(max_length=50)
     percentage = models.FloatField(default=0.0)
-    joined_at = models.DateField(default=None)
-    till = models.DateField(default=None)
+    From = models.IntegerField(choices=year_choices(), default=current_year())
+    Till = models.IntegerField(choices=year_choices(), default=current_year())
     created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='edu_details_created_by')
     updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='edu_details_updated_by')
 

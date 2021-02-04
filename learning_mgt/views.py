@@ -47,7 +47,7 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
         """        
         role = self.request.user.role
         if role == 'Student':
-            return self.queryset.filter(student=self.request.user)
+            return self.queryset.filter(student=self.request.user.student)
         elif role == "Mentor" :
             return self.queryset.filter(mentorstudent=self.request.user.id)
         else:

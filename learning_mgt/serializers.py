@@ -10,7 +10,7 @@ class UpdateStudentDetailsSerializer(serializers.ModelSerializer):
 class UpdateEducationDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EducationDetails
-        fields = ['course', 'institution', 'percentage', 'joined_at', 'till']
+        fields = ['course', 'institution', 'percentage', 'From', 'Till']
 
 class AddCourseSerializer(serializers.ModelSerializer):
     class Meta:
