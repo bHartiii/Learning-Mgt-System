@@ -14,19 +14,22 @@ def create_student_details(sender, instance, created, **kwargs):
     """
     if created:
         if instance.role == 'Student':
-            student = Student.objects.create(student=instance)
-            EducationDetails.objects.create(student=student)
+            student = Student.objects.create(student=instance, created_by=instance.created_by)
+            EducationDetails.objects.create(student=student, course='10th', created_by=instance.created_by)
+            EducationDetails.objects.create(student=student, course='12th', created_by=instance.created_by)
+            EducationDetails.objects.create(student=student, course='UG', created_by=instance.created_by)
         elif instance.role == 'Mentor':
-            Mentor.objects.create(mentor=instance)
+            Mentor.objects.create(mentor=instance, created_by=instance.created_by)
 
 @receiver(post_save, sender=MentorStudent)
 def create_performance_instance(sender, instance, created, **kwargs):
     if created:        
-        Performance.objects.create(student=instance.student, course=instance.course, mentor=instance.mentor)
+        Performance.objects.create(student=instance.student, course=instance.course, mentor=instance.mentor, created_by=instance.created_by)
     else:
         performance = Performance.objects.get(student=instance.student)
         performance.course=instance.course
         performance.mentor=instance.mentor
+        performance.updated_by = instance.updated_by
         performance.save()
 
 @receiver(post_save, sender=Performance)

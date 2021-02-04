@@ -23,7 +23,7 @@ class UserCreationAPIView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(created_by=self.request.user)
         user_data = serializer.data
         user_role = user_data['role']
         email = user_data['email']
@@ -67,7 +67,7 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
             return self.queryset.filter(id=user)
 
     def perform_update(self, serializer):
-        user = serializer.save()
+        user = serializer.save(updated_by=self.request.user)
         return Response({'response': user}, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
