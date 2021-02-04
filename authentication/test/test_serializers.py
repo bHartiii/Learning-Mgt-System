@@ -35,11 +35,15 @@ class UserSerializersTest(TestCase):
             'username': 'bharti',
             'password': 'bharti',
         }
+        self.reset_password_serializer_data = {
+            'email': 'user@gmail.com',
+        }
 
         self.user = User.objects.create(**self.user_attributes)
         self.user_creation_serializer = UserCreationSerializer(instance=self.user)
         self.update_user_serializer = UpdateUserSerializer(instance=self.user)
         self.login_serializer = LoginSerializer(instance=self.user)
+        self.reset_password_serializer = ResetPasswordSerializer(instance=self.user)
 
 
 ### Test cases for UserCreationSerailizer
@@ -195,4 +199,20 @@ class UserSerializersTest(TestCase):
         serializer = LoginSerializer(data=self.login_serializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['username', 'password']))
+
+### Test cases for ResetPasswordSerailizer : 
+
+    def test_reset_password_serializer_contains_expected_fields(self):
+        data = self.reset_password_serializer.data
+        self.assertCountEqual(data.keys(), ['email'])
+
+    def test_reset_password_serializer_fields_content(self):
+        data = self.reset_password_serializer.data
+        self.assertEqual(data['email'], self.user_attributes['email'])
+
+    def test_reset_password_serializer_empty_fields_content(self):
+        self.reset_password_serializer_data['email'] = ''
+        serializer = ResetPasswordSerializer(data=self.reset_password_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['email']))
 
