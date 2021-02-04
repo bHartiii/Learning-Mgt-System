@@ -30,8 +30,8 @@ def create_performance_instance(sender, instance, created, **kwargs):
         performance.save()
 
 @receiver(post_save, sender=Performance)
-def send_performance_email(sender, instance, created, update_fields, **kwargs):
-    if not created and update_fields == instance.current_score:
+def send_performance_email(sender, instance, created, **kwargs):
+    if not created :
         data = {
             'email' : instance.student,
             'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+str(instance.current_score),
