@@ -40,7 +40,7 @@ class UserCreationAPIView(generics.GenericAPIView):
             'reverse' : 'login',
             'token' : token,
             'message' :  "Hii "+user.get_full_name()+'\n'+'You registration as '+user_role+' is done. \n'+'Please use the following link to login. This link will be activated for 24 hrours only!!! \n'+"\nUsername - "+user.username+"\nPassword - "+user_data['password'],
-            'subject' : 'Registration is successful!!!!!!',
+            'subject' : 'Registration is successfull !!!!!',
             'site' : get_current_site(request).domain
         }
         Util.email_data_with_token(email_data)

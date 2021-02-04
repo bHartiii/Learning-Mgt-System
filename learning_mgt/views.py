@@ -30,7 +30,8 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         """
             Save the updated user student instance
         """
-        student = serializer.save(student=self.request.user)
+        user = self.request.user
+        student = serializer.save(student=user, updated_by=user)
         return Response({'response': student}, status=status.HTTP_200_OK)
 
 
@@ -56,7 +57,8 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
         """
             Save the updated user student instance
         """
-        student = serializer.save(student=self.request.user.student)
+        user = self.request.user
+        student = serializer.save(student=user.student, updated_by=user)
         return Response({'response': student}, status=status.HTTP_200_OK)
 
 
@@ -74,7 +76,7 @@ class Courses(generics.ListCreateAPIView):
         """
             create a new course instance
         """
-        course = serializer.save()
+        course = serializer.save(created_by=self.request.user)
         return Response({'response': course}, status=status.HTTP_201_CREATED)
 
 class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
@@ -84,7 +86,7 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
 
     def perform_update(self,serializer):
-        course = serializer.save()
+        course = serializer.save(upated_by=self.request.user)
         return Response({'response':course}, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
@@ -124,7 +126,7 @@ class MentorCourseMapping(generics.GenericAPIView):
         for course_data in courses:
             course = Course.objects.get(course_name=course_data)
             mentor.course.add(course.id)
-            mentor.save()
+            mentor.save(updated_by=self.request.user)
         return Response({'response':'Course added successfully.'}, status=status.HTTP_200_OK)
 
     def get(self,request, mentor_id):
@@ -151,7 +153,7 @@ class MentorStudentMapping(generics.GenericAPIView):
         course_data = serializer.validated_data['course']
         mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
         if course_data in mentor.course.all():
-            serializer.save()
+            serializer.save(created_by=self.request.user)
             return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
         else:
             return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -169,11 +171,12 @@ class MentorStudentDetails(generics.GenericAPIView):
     serializer_class = MentorStudentUpdateMappingSerializer
     
     def get_queryset(self, search_id):
+        user = self.request.user
         try:
             if self.request.user.role == 'Admin':
                 students = MentorStudent.objects.get(id=search_id)
             else:
-                students = MentorStudent.objects.get(id=search_id, mentor=Mentor.objects.get(mentor=self.request.user))
+                students = MentorStudent.objects.get(id=search_id, mentor=Mentor.objects.get(mentor=user))
         except MentorStudent.DoesNotExist:
             return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
         return students
@@ -188,7 +191,7 @@ class MentorStudentDetails(generics.GenericAPIView):
         if course_data in mentor.course.all():
             students.course = course_data
             students.mentor = mentor
-            students.save()
+            students.save(updated_by=user)
             return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
         else:
             return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -228,3 +231,7 @@ class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
         else:
             return self.queryset.filter(mentor=user.id)
 
+    def perform_update(self, serializer):
+        user = self.request.user
+        student = serializer.save(updated_by=user)
+        return Response({'response': student}, status=status.HTTP_200_OK)        
