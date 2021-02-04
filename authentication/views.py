@@ -47,6 +47,12 @@ class UserCreationAPIView(generics.GenericAPIView):
         Util.send_email(Util.email_data_with_token(email_data))
         return Response(user_data, status=status.HTTP_201_CREATED)
 
+    def get(self, request):
+        users = User.objects.all()
+        serializer = self.serializer_class(users, many=True)
+        return Response({'response': serializer.data}, status=status.HTTP_200_OK)
+
+
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsAdmin)
     serializer_class = UpdateUserSerializer
