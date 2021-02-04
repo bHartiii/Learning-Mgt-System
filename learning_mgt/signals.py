@@ -34,7 +34,7 @@ def send_performance_email(sender, instance, created, **kwargs):
     if not created :
         data = {
             'email' : instance.student,
-            'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+str(instance.current_score),
+            'message' :  "Hii "+instance.student.get_full_name()+'\n'+'Your score for this week : \n'+"\nScore - "+str(instance.current_score)+"\n mentor -"+str(instance.mentor),
             'subject' : 'Performance Report',
         }
         email = Util.email_data_generic(data)
