@@ -1,6 +1,6 @@
 from django.test import TestCase
 from authentication.models import User
-from authentication.serializers import UserCreationSerializer, UpdateUserSerializer
+from authentication.serializers import UserCreationSerializer, UpdateUserSerializer, LoginSerializer, ResetPasswordSerializer, NewPasswordSerializer
 
 class UserSerializersTest(TestCase):
 
@@ -31,10 +31,16 @@ class UserSerializersTest(TestCase):
             'mobile_number': '1234567890',
             'role': 'Student',
         }
+        self.login_serializer_data = {
+            'username': 'bharti',
+            'password': 'bharti',
+        }
 
         self.user = User.objects.create(**self.user_attributes)
         self.user_creation_serializer = UserCreationSerializer(instance=self.user)
         self.update_user_serializer = UpdateUserSerializer(instance=self.user)
+        self.login_serializer = LoginSerializer(instance=self.user)
+
 
 ### Test cases for UserCreationSerailizer
 
@@ -111,7 +117,6 @@ class UserSerializersTest(TestCase):
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
 
-
 ### Test cases for UpdateUserSerailizer
     def test_update_user_serializer_contains_expected_fields(self):
         data = self.update_user_serializer.data
@@ -171,3 +176,23 @@ class UserSerializersTest(TestCase):
         serializer = UpdateUserSerializer(data=self.update_user_serializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
+
+
+### Test cases for LoginSerializer : 
+
+    def test_login_serializer_contains_expected_fields(self):
+        data = self.login_serializer.data
+        self.assertCountEqual(data.keys(), ['id', 'username', 'password'])
+
+    def test_login_serializer_fields_content(self):
+        data = self.login_serializer.data
+        self.assertEqual(data['username'], self.user_attributes['username'])
+        self.assertEqual(data['password'], self.user_attributes['password'])
+
+    def test_login_serializer_empty_fields_content(self):
+        self.login_serializer_data['username'] = ''
+        self.login_serializer_data['password'] = ''
+        serializer = LoginSerializer(data=self.login_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['username', 'password']))
+

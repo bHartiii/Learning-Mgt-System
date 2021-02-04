@@ -28,7 +28,8 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=User
-        fields=['username', 'password']
+        fields=['id', 'username', 'password']
+        extra_kwargs = {'id':{'read_only':True}}
 
     def validate(self, attrs):
         username= attrs.get('username','')
