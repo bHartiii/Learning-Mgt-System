@@ -5,6 +5,8 @@ class Course(models.Model):
     course_name = models.CharField(blank=False, unique=True, db_index=True, max_length=50)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='course_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='course_updated_by')
 
     def __str__(self):
         return self.course_name
@@ -14,6 +16,8 @@ class Mentor(models.Model):
     course = models.ManyToManyField(to=Course, related_name='mentor_course')
     createdAt = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='mentor_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='mentor_updated_by')
 
     def __str__(self):
         return self.mentor.email
@@ -30,6 +34,8 @@ class Student(models.Model):
     yr_of_exp = models.FloatField(default=0)
     create_time = models.DateField(auto_now_add=True)
     update_time = models.DateField(auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='student_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='student_updated_by')
 
     def __str__(self):
         return self.student.email
@@ -44,12 +50,15 @@ class EducationDetails(models.Model):
     percentage = models.FloatField(default=0.0)
     joined_at = models.DateField(default=None)
     till = models.DateField(default=None)
-
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='edu_details_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='edu_details_updated_by')
 
 class MentorStudent(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
     course = models.ForeignKey(to=Course, on_delete=models.CASCADE)
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='mentor_student_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='mentor_student_updated_by')
 
 class Performance(models.Model):
     student = models.OneToOneField(to=Student, on_delete=models.CASCADE)
@@ -57,3 +66,5 @@ class Performance(models.Model):
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
     current_score = models.FloatField(blank=True, null=True)
     updated_at = models.DateField(auto_now=True)
+    created_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='performance_created_by')
+    updated_by = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='performance_updated_by')
