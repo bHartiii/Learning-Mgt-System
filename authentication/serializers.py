@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 
 class UserCreationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=68,  min_length=6)
+    mobile_number = serializers.CharField(max_length=10,  min_length=10)
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
