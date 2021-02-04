@@ -38,9 +38,10 @@ class LoginSerializer(serializers.ModelSerializer):
             user = authenticate(username=username, password=password)
             if user is None:
                 raise AuthenticationFailed("Invalid credentials given!!!")
+            return attrs
         except serializers.ValidationError:
             return {'error':"Please provide email and password"}
-        return attrs
+        
 
 class ResetPasswordSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255, min_length=3)
@@ -53,21 +54,22 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
         email = attrs.get('email','')        
         try:
             user = User.objects.get(email=email)
+            return attrs
         except User.DoesNotExist:
             raise serializers.ValidationError("This email is not registerd")    
-        return attrs
+        
 
 class NewPasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6)
-    password2 = serializers.CharField(max_length=68, min_length=6)
+    confirm_password = serializers.CharField(max_length=68, min_length=6)
         
     class Meta:
         model=User
-        fields = ['password','password2']
+        fields = ['password','confirm_password']
 
     def validate(self, attrs):
         password = attrs.get('password','')
-        password2 = attrs.get('password2','')        
-        if password != password2:
+        confirm_password = attrs.get('confirm_password','')        
+        if password != confirm_password:
             raise serializers.ValidationError("Password not matched!!")
         return attrs

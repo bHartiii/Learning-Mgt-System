@@ -38,12 +38,17 @@ class UserSerializersTest(TestCase):
         self.reset_password_serializer_data = {
             'email': 'user@gmail.com',
         }
+        self.new_password_serializer_data = {
+            'password': 'newpass',
+            'confirm_password' : 'newpass'
+        }
 
         self.user = User.objects.create(**self.user_attributes)
         self.user_creation_serializer = UserCreationSerializer(instance=self.user)
         self.update_user_serializer = UpdateUserSerializer(instance=self.user)
         self.login_serializer = LoginSerializer(instance=self.user)
         self.reset_password_serializer = ResetPasswordSerializer(instance=self.user)
+        self.new_password_serializer = NewPasswordSerializer(instance=self.new_password_serializer_data)
 
 
 ### Test cases for UserCreationSerailizer
@@ -120,6 +125,13 @@ class UserSerializersTest(TestCase):
         serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
+
+    # def test_user_creation_serializer_first_name_and_last_name_content(self):
+    #     self.user_creation_serializer_data['first_name'] = '123'
+    #     self.user_creation_serializer_data['last_name'] = '123'
+    #     serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
+    #     self.assertFalse(serializer.is_valid())        
+    #     self.assertEqual(set(serializer.errors), set(['first_name', 'last_name']))
 
 ### Test cases for UpdateUserSerailizer
     def test_update_user_serializer_contains_expected_fields(self):
@@ -200,6 +212,13 @@ class UserSerializersTest(TestCase):
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['username', 'password']))
 
+    def test_login_serializer_password_field_content_length(self):
+        self.login_serializer_data['username'] = ''
+        self.login_serializer_data['password'] = 'abc'
+        serializer = LoginSerializer(data=self.login_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['username', 'password']))
+
 ### Test cases for ResetPasswordSerailizer : 
 
     def test_reset_password_serializer_contains_expected_fields(self):
@@ -215,4 +234,32 @@ class UserSerializersTest(TestCase):
         serializer = ResetPasswordSerializer(data=self.reset_password_serializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
+
+    def test_reset_password_serializer_email_field_invalid_content(self):
+        self.reset_password_serializer_data['email'] = 'abc'
+        serializer = ResetPasswordSerializer(data=self.reset_password_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['email']))
+
+### Test cases for NewPasswordSerailizer : 
+
+    def test_new_password_serializer_contains_expected_fields(self):
+        data = self.new_password_serializer.data
+        self.assertCountEqual(data.keys(), ['password','confirm_password'])
+
+    def test_new_password_serializer_empty_fields_content(self):
+        self.new_password_serializer_data['password'] = ''
+        self.new_password_serializer_data['confirm_password'] = ''
+        serializer = NewPasswordSerializer(data=self.new_password_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['password', 'confirm_password']))
+
+    def test_new_password_serializer_fields_content_length(self):
+        self.new_password_serializer_data['password'] = 'abc'
+        self.new_password_serializer_data['confirm_password'] = 'abc'
+        serializer = NewPasswordSerializer(data=self.new_password_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['password', 'confirm_password']))
+
+
 
