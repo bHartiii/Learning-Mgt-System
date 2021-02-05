@@ -62,11 +62,11 @@ class AuthenticationAPITest(TestCase):
         }
         self.valid_new_password_payload = {
             'password' : 'newpass',
-            'password2' : 'newpass'
+            'confirm_password' : 'newpass'
         }
         self.invalid_new_password_payload = {
             'password' : 'newpass',
-            'password2' : ''
+            'confirm_password' : ''
         }
 
 ### Test cases for create-user API : 
