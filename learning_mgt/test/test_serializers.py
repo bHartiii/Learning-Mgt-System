@@ -29,11 +29,10 @@ class ManagementSerializersTest(TestCase):
         }
         
         self.education_details_data = {
-            'course': 'UG',
             'institution': 'amity',
-            'percentage': '81',
-            'From': '2016',
-            'Till': '2020',
+            'percentage': 81,
+            'From': 2016,
+            'Till': 2020,
         }
         
         # payloads to pass data in serializers
@@ -49,11 +48,10 @@ class ManagementSerializersTest(TestCase):
         }
       
         self.UpdateEducationDetailsSerializer_data = {
-            'course': 'UG',
             'institution': 'amity',
-            'percentage': '81',
-            'From': '2016',
-            'Till': '2020',
+            'percentage': 81,
+            'From': 2006,
+            'Till': 2020,
         }
 
         ### Update student model object with dictionary data
@@ -70,16 +68,11 @@ class ManagementSerializersTest(TestCase):
 
         ### Update education-details model object with dictioanry data
         self.edu_details = EducationDetails.objects.get(student=self.student_details, course='UG')
-        self.student_details = Student.objects.get(student=self.student)
-        self.student_details.image = self.student_details_data['image']
-        self.student_details.contact = self.student_details_data['contact']
-        self.student_details.alternate_contact = self.student_details_data['alternate_contact']
-        self.student_details.relation_with_alternate_contact = self.student_details_data['relation_with_alternate_contact']
-        self.student_details.current_location = self.student_details_data['current_location']
-        self.student_details.Address = self.student_details_data['Address']
-        self.student_details.git_link = self.student_details_data['git_link']
-        self.student_details.yr_of_exp = self.student_details_data['yr_of_exp']
-        self.student_details.save()
+        self.edu_details.institution = self.education_details_data['institution']
+        self.edu_details.percentage = self.education_details_data['percentage']
+        self.edu_details.From = self.education_details_data['From']
+        self.edu_details.Till = self.education_details_data['Till']
+        self.edu_details.save()
 
         ### Create mentor-course object
         self.mentor_course = Mentor.objects.get(mentor=self.mentor)
@@ -235,5 +228,106 @@ class ManagementSerializersTest(TestCase):
         serializer = UpdateStudentDetailsSerializer(data=self.UpdateStudentDetailsSerializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['yr_of_exp']))
+
+
+### Test cases for UpdateEducationDetails :
+
+    def test_update_education_details_serializer_contains_expected_fields(self):
+        """
+            To check fields of UpdateEducationDetailsSerializer serializer 
+        """
+        data = self.education_detail_serializer.data
+        self.assertCountEqual(data.keys(), ['id','student', 'course', 'institution', 'percentage', 'From', 'Till'])
+
+
+    def test_update_education_details_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.education_detail_serializer.data
+        self.assertEqual(data['institution'], self.education_details_data['institution'])
+        self.assertEqual(data['percentage'], self.education_details_data['percentage'])
+        self.assertEqual(data['From'], self.education_details_data['From'])
+        self.assertEqual(data['Till'], self.education_details_data['Till'])
+
+
+    def test_update_education_details_serializer_empty_fields_content(self):
+        """
+            To check if serializer is giving validation error if any field is empty
+        """
+        self.UpdateEducationDetailsSerializer_data['institution'] = ''
+        self.UpdateEducationDetailsSerializer_data['percentage'] = ''
+        self.UpdateEducationDetailsSerializer_data['From'] = ''
+        self.UpdateEducationDetailsSerializer_data['Till'] = ''
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['institution', 'percentage', 'From', 'Till']))
+
+
+    def test_update_education_details_serializer_institution_field_invalid_content(self):
+        """
+            To check if serializer is giving validation error if institution contains integer
+        """
+        self.UpdateEducationDetailsSerializer_data['institution'] = '12331'
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['institution']))
+
+
+    def test_update_education_details_serializer_institution_field_invalid_content_length(self):
+        """
+            To check if serializer is giving validation error if institution contains less than 2 characters
+        """
+        self.UpdateEducationDetailsSerializer_data['institution'] = 'ab'
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['institution']))
+
+
+    def test_update_education_details_serializer_percentage_field_invalid_content(self):
+        """
+            To check if serializer is giving validation error if percentage contains invalid data
+        """
+        self.UpdateEducationDetailsSerializer_data['percentage'] = 'ab'
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['percentage']))
+
+
+    def test_update_education_details_serializer_From_field_invalid_content(self):
+        """
+            To check if serializer is giving validation error if From contains invalid data
+        """
+        self.UpdateEducationDetailsSerializer_data['From'] = 'ab'
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['From']))
+
+
+    def test_update_education_details_serializer_Till_field_invalid_content(self):
+        """
+            To check if serializer is giving validation error if Till contains invalid data
+        """
+        self.UpdateEducationDetailsSerializer_data['Till'] = 'ab'
+
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['Till']))
+
+
+    def test_update_education_details_serializer_From_and_Till_field_float_content(self):
+        """
+            To check if serializer is giving validation error if From and Till contains invalid data
+        """
+        self.UpdateEducationDetailsSerializer_data['Till'] = 2.0
+        self.UpdateEducationDetailsSerializer_data['From'] = 3.3
+        serializer = UpdateEducationDetailsSerializer(data=self.UpdateEducationDetailsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['From', 'Till']))
 
 

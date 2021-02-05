@@ -13,6 +13,7 @@ class UpdateStudentDetailsSerializer(serializers.ModelSerializer):
 
 class UpdateEducationDetailsSerializer(serializers.ModelSerializer):
     student = serializers.StringRelatedField(read_only=True)
+    institution = serializers.RegexField("[a-zA-Z]{3,}", max_length=50)
     class Meta:
         model = EducationDetails
         fields = ['id','student', 'course', 'institution', 'percentage', 'From', 'Till']
