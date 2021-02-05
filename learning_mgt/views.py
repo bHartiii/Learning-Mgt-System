@@ -35,7 +35,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         return Response({'response': student}, status=status.HTTP_200_OK)
 
 
-class UpdateEducationDetails(generics.ListAPIView):
+class EducationDetails(generics.ListAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
@@ -52,7 +52,7 @@ class UpdateEducationDetails(generics.ListAPIView):
             return self.queryset.filter(mentorstudent=self.request.user.id)
         else:
             return self.queryset.all()
-            
+
 
 class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
