@@ -5,18 +5,18 @@ from rest_framework.exceptions import AuthenticationFailed
 
 class UserCreationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68,  min_length=6)
-    mobile_number = serializers.RegexField("^[0-9]{10}$") 
-    first_name = serializers.CharField(max_length=50,  min_length=3)
-    last_name = serializers.CharField(max_length=50,  min_length=3)
+    mobile_number = serializers.RegexField("^[7-9]{1}[0-9]{9}$") 
+    first_name = serializers.RegexField("[a-zA-Z]", max_length=50)
+    last_name = serializers.RegexField("[a-zA-Z]", max_length=50)
     class Meta:
         model = User
         fields = ['id','username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
         extra_kwargs = {'id':{'read_only':True}}
 
 class UpdateUserSerializer(serializers.ModelSerializer):
-    mobile_number = serializers.RegexField("^[0-9]{10}$") 
-    first_name = serializers.CharField(max_length=50,  min_length=3)
-    last_name = serializers.CharField(max_length=50,  min_length=3)
+    mobile_number = serializers.RegexField("^[7-9]{1}[0-9]{9}$") 
+    first_name = serializers.RegexField("[a-zA-Z]", max_length=50)
+    last_name = serializers.RegexField("[a-zA-Z]", max_length=50)
     class Meta:
         model = User
         fields = ['id','username', 'first_name', 'last_name', 'email', 'mobile_number', 'role', 'password']
