@@ -34,9 +34,6 @@ class IsStudent(permissions.BasePermission):
         else:
             return request.user.role == 'Student'
 
-        
-            return False
-
 class IsNotAthenticated(permissions.BasePermission):
     def has_permission(self, request, view):
         if bool(request.user and request.user.is_authenticated) == False:
