@@ -10,7 +10,7 @@ class UserSerializersTest(TestCase):
             'last_name': 'mali',
             'username': 'bharti',
             'email': 'user@gmail.com',
-            'mobile_number': '1234567890',
+            'mobile_number': '7742977444',
             'role': 'Admin',
             'password': 'bharti',
         }
@@ -20,7 +20,7 @@ class UserSerializersTest(TestCase):
             'last_name': 'mali',
             'username': 'bharti2',
             'email': 'user2@gmail.com',
-            'mobile_number': '1234567890',
+            'mobile_number': '7742977444',
             'role': 'Student',
             'password': 'bharti',
         }
@@ -28,7 +28,7 @@ class UserSerializersTest(TestCase):
             'first_name': 'bharti',
             'last_name': 'mali',
             'email': 'user2@gmail.com',
-            'mobile_number': '1234567890',
+            'mobile_number': '7742977444',
             'role': 'Student',
         }
         self.login_serializer_data = {
@@ -126,12 +126,12 @@ class UserSerializersTest(TestCase):
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['email']))
 
-    # def test_user_creation_serializer_first_name_and_last_name_content(self):
-    #     self.user_creation_serializer_data['first_name'] = '123'
-    #     self.user_creation_serializer_data['last_name'] = '123'
-    #     serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
-    #     self.assertFalse(serializer.is_valid())        
-    #     self.assertEqual(set(serializer.errors), set(['first_name', 'last_name']))
+    def test_user_creation_serializer_first_name_and_last_name_content(self):
+        self.user_creation_serializer_data['first_name'] = '123'
+        self.user_creation_serializer_data['last_name'] = '123'
+        serializer = UserCreationSerializer(data=self.user_creation_serializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['first_name', 'last_name']))
 
 ### Test cases for UpdateUserSerailizer
     def test_update_user_serializer_contains_expected_fields(self):

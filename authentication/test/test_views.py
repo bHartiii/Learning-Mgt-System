@@ -24,7 +24,7 @@ class AuthenticationAPITest(TestCase):
             'first_name' : 'Bharti',
             'last_name' : 'Mali',
             'email' : 'malibharti5@gmail.com',
-            'mobile_number':'1234567890',
+            'mobile_number':'9745677878',
             'password' : 'bharti',
             'role' : 'Admin'
         }
