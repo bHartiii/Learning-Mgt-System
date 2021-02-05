@@ -14,7 +14,7 @@ from django.conf import settings
 import pyshorteners
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from authentication.permissions import IsAdmin
+from authentication.permissions import IsAdmin, IsNotAthenticated
 
 class UserCreationAPIView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, IsAdmin,)
@@ -106,7 +106,7 @@ class Logout(generics.GenericAPIView):
 
 class ForgotPassword(generics.GenericAPIView):
     serializer_class = ResetPasswordSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsNotAthenticated,)
 
     def post(self, request):   
         serializer = self.serializer_class(data=request.data)

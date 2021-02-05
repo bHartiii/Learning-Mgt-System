@@ -10,3 +10,8 @@ class IsMentor(permissions.BasePermission):
             return True
         else:
             return False
+
+class IsNotAthenticated(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if bool(request.user and request.user.is_authenticated) == False:
+            return True
