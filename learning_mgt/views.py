@@ -35,7 +35,26 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         return Response({'response': student}, status=status.HTTP_200_OK)
 
 
-class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
+class UpdateEducationDetails(generics.ListAPIView):
+    permission_classes = (IsAuthenticated, IsStudent)
+    serializer_class = UpdateEducationDetailsSerializer
+    queryset = EducationDetails.objects.all()
+    lookup_field = "student_id"
+
+    def get_queryset(self):
+        """
+            Returns current logged in student profile instance
+        """        
+        role = self.request.user.role
+        if role == 'Student':
+            return EducationDetails.objects.filter(student=self.request.user.student)
+        elif role == "Mentor" :
+            return self.queryset.filter(mentorstudent=self.request.user.id)
+        else:
+            return self.queryset.all()
+            
+
+class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
@@ -47,7 +66,7 @@ class UpdateEducationDetails(generics.RetrieveUpdateAPIView):
         """        
         role = self.request.user.role
         if role == 'Student':
-            return self.queryset.filter(student=self.request.user.student)
+            return EducationDetails.objects.filter(student=self.request.user.student)
         elif role == "Mentor" :
             return self.queryset.filter(mentorstudent=self.request.user.id)
         else:
@@ -118,27 +137,27 @@ class MentorCourseMapping(generics.GenericAPIView):
     def put(self, request, mentor_id):
         try:
             mentor = Mentor.objects.get(id = mentor_id)
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            courses = serializer.validated_data['course']
+            for course_data in courses:
+                course = Course.objects.get(course_name=course_data)
+                mentor.course.add(course.id)
+                mentor.save(updated_by=self.request.user)
+            return Response({'response':'Course added successfully.'}, status=status.HTTP_200_OK)
         except Mentor.DoesNotExist:
             return Response({'response':'Mentor does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        courses = serializer.validated_data['course']
-        for course_data in courses:
-            course = Course.objects.get(course_name=course_data)
-            mentor.course.add(course.id)
-            mentor.save(updated_by=self.request.user)
-        return Response({'response':'Course added successfully.'}, status=status.HTTP_200_OK)
 
     def get(self,request, mentor_id):
         try:
             mentor = self.get_queryset(mentor_id)
+            if mentor:
+                serializer = MentorsSerializer(mentor, many=True)
+                return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({'response':'Not Found'}, status=status.HTTP_404_NOT_FOUND)
         except Mentor.DoesNotExist:
             return Response({'response':'This mentor does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        if mentor:
-            serializer = MentorsSerializer(mentor, many=True)
-            return Response({'response':serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response({'response':'Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class MentorStudentMapping(generics.GenericAPIView):
@@ -177,9 +196,10 @@ class MentorStudentDetails(generics.GenericAPIView):
                 students = MentorStudent.objects.get(id=search_id)
             else:
                 students = MentorStudent.objects.get(id=search_id, mentor=Mentor.objects.get(mentor=user))
+            return students
         except MentorStudent.DoesNotExist:
             return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        return students
+        
 
     def put(self, request, search_id):
         students = self.get_queryset(search_id)

@@ -3,14 +3,17 @@ from learning_mgt.models import Student, EducationDetails, Course, Mentor, Mento
 
 
 class UpdateStudentDetailsSerializer(serializers.ModelSerializer):   
+    student = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Student
-        fields = ['image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp']
+        fields = ['id', 'student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp']
 
 class UpdateEducationDetailsSerializer(serializers.ModelSerializer):
+    student = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = EducationDetails
-        fields = ['course', 'institution', 'percentage', 'From', 'Till']
+        fields = ['id', 'student', 'course', 'institution', 'percentage', 'From', 'Till']
+        extra_kwargs = {'course':{'read_only':True}}
 
 class AddCourseSerializer(serializers.ModelSerializer):
     class Meta:
