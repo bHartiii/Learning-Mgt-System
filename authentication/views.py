@@ -127,37 +127,6 @@ class ForgotPassword(generics.GenericAPIView):
         user_data = serializer.data
         try:
             user = User.objects.get(email=user_data['email']) 
-        except User.DoesNotExist:
-            return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST) 
-        payload = jwt_payload_handler(user)
-        token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
-        user_data['token'] = token
-        email_data = {
-            'email' : user.email,
-            'reverse' : 'new-password',
-            'token' : token,
-            'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
-            'subject' : 'Reset password Link',
-            'site' : get_current_site(request).domain
-        }
-        Util.email_data_with_token(email_data)
-        Util.send_email(Util.email_data_with_token(email_data))
-        return Response(user_data, status=status.HTTP_200_OK)
-
-
-class ResetPassword(generics.GenericAPIView):
-    serializer_class = ResetPasswordSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):       
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_data = serializer.data
-        try:
-            user = User.objects.get(email=user_data['email']) 
-        except User.DoesNotExist:
-            return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST)
-        if user == request.user:
             payload = jwt_payload_handler(user)
             token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
             user_data['token'] = token
@@ -172,9 +141,39 @@ class ResetPassword(generics.GenericAPIView):
             Util.email_data_with_token(email_data)
             Util.send_email(Util.email_data_with_token(email_data))
             return Response(user_data, status=status.HTTP_200_OK)
-        else:
-            return Response({'response':'This mail is not registered for this account!!!'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ResetPassword(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):       
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_data = serializer.data
+        try:
+            user = User.objects.get(email=user_data['email']) 
+            if user == request.user:
+                payload = jwt_payload_handler(user)
+                token = jwt.encode(payload, settings.SECRET_KEY).decode('UTF-8')
+                user_data['token'] = token
+                email_data = {
+                    'email' : user.email,
+                    'reverse' : 'new-password',
+                    'token' : token,
+                    'message' :  "Hii "+user.get_full_name()+'\n'+"Use this link to reset password: \n",
+                    'subject' : 'Reset password Link',
+                    'site' : get_current_site(request).domain
+                }
+                Util.email_data_with_token(email_data)
+                Util.send_email(Util.email_data_with_token(email_data))
+                return Response(user_data, status=status.HTTP_200_OK)
+            else:
+                return Response({'response':'This mail is not registered for this account!!!'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
 class NewPassword(generics.GenericAPIView):
 
