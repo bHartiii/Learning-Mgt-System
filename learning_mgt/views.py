@@ -35,7 +35,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         return Response({'response': student}, status=status.HTTP_200_OK)
 
 
-class EducationDetails(generics.ListAPIView):
+class EducationDetailsList(generics.ListAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
