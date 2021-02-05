@@ -4,6 +4,9 @@ from learning_mgt.models import Student, EducationDetails, Course, Mentor, Mento
 
 class UpdateStudentDetailsSerializer(serializers.ModelSerializer):   
     student = serializers.StringRelatedField(read_only=True)
+    contact = serializers.RegexField("^[7-9]{1}[0-9]{9}$")
+    alternate_contact = serializers.RegexField("^[7-9]{1}[0-9]{9}$")
+    relation_with_alternate_contact = serializers.RegexField("[a-zA-Z]{3,}", max_length=50)
     class Meta:
         model = Student
         fields = ['id', 'student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp']
@@ -12,13 +15,13 @@ class UpdateEducationDetailsSerializer(serializers.ModelSerializer):
     student = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = EducationDetails
-        fields = ['id', 'student', 'course', 'institution', 'percentage', 'From', 'Till']
+        fields = ['id','student', 'course', 'institution', 'percentage', 'From', 'Till']
         extra_kwargs = {'course':{'read_only':True}}
 
 class AddCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['course_name']
+        fields = ['id','course_name']
 
 class MentorsSerializer(serializers.ModelSerializer):
     mentor = serializers.StringRelatedField(read_only=True)
