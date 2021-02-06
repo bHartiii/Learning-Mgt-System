@@ -57,7 +57,7 @@ class MentorStudentListSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = MentorStudent
-        fields = ['student', 'course', 'mentor']
+        fields = ['id','student', 'course', 'mentor']
 
 class PerformanceSerializer(serializers.ModelSerializer):
     student = serializers.StringRelatedField(read_only=True)
