@@ -47,7 +47,7 @@ class MentorStudentUpdateMappingSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MentorStudent
-        fields = ['student', 'course', 'mentor']
+        fields = ['id','student', 'course', 'mentor']
         extra_kwargs = {'student': {'read_only': True}}
 
 class MentorStudentListSerializer(serializers.ModelSerializer):

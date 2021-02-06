@@ -65,7 +65,12 @@ class ManagementSerializersTest(TestCase):
             'mentor' :  self.mentor,
             'course' :  self.course
         }
-
+        self.PerformanceSerializer_data = {
+            'student':  self.student,
+            'mentor' :  self.mentor,
+            'course' :  self.course,
+            'current_score' : 3.2
+        }
 
         ### Update student model object with dictionary data
         self.student_details = Student.objects.get(student=self.student)
@@ -97,6 +102,11 @@ class ManagementSerializersTest(TestCase):
         ### Create mentor-student model object
         self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course, mentor=self.mentor_course)
 
+        ### Update performance model object : 
+        self.performance = Performance.objects.get(student=self.student_details)
+        self.performance.current_score = 3
+        self.performance.save()
+
         ### Create serializer with each model instance
         self.student_detail_serializer = UpdateStudentDetailsSerializer(instance=self.student_details)
         self.education_detail_serializer = UpdateEducationDetailsSerializer(instance=self.edu_details)
@@ -104,6 +114,7 @@ class ManagementSerializersTest(TestCase):
         self.mentor_course_serializer = MentorsSerializer(instance=self.mentor_course)
         self.mentor_course_mapping_serializer = MentorCourseMappingSerializer(instance=self.mentor_course)
         self.mentor_course_student_serializer = MentorStudentMappingSerializer(instance=self.mentor_student)
+        self.performance_serializer = PerformanceSerializer(instance=self.performance)
 
 
 ### Test cases for UpdateStudentDetails :
@@ -458,3 +469,35 @@ class ManagementSerializersTest(TestCase):
         serializer = MentorStudentMappingSerializer(data=self.MentorStudentMappingSerializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['mentor','student','course']))
+
+
+### Test cases for PerformanceSerializer :
+
+    def test_performance_serializer_contains_expected_fields(self):
+        """
+            To check fields of PerformanceSerializer serializer 
+        """
+        data = self.performance_serializer.data
+        self.assertCountEqual(data.keys(), ['id', 'mentor', 'student', 'course','current_score','updated_by','created_by','updated_at'])
+
+
+    def test_performance_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.performance_serializer.data
+        self.assertEqual(data['mentor'], self.mentor.email)
+        self.assertEqual(data['course'], self.course.course_name)
+        self.assertEqual(data['student'], self.student.email)
+        self.assertEqual(data['current_score'], 3)
+
+
+    def test_performance_serializer_empty_fields_content(self):
+        """
+            To check if serializer is giving validation error if any field is empty
+        # """
+        self.PerformanceSerializer_data['current_score'] = ''
+
+        serializer = PerformanceSerializer(data=self.PerformanceSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['current_score']))
