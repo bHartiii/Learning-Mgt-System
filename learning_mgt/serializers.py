@@ -29,19 +29,19 @@ class MentorsSerializer(serializers.ModelSerializer):
     course = serializers.StringRelatedField(many=True, read_only=True)
     class Meta:
         model = Mentor
-        fields = ['mentor','course']
+        fields = ['id', 'mentor', 'course']
 
 class MentorCourseMappingSerializer(serializers.ModelSerializer):
     mentor = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Mentor
-        fields = ['mentor','course']
+        fields = ['id', 'mentor','course']
 
 class MentorStudentMappingSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = MentorStudent
-        fields = ['student', 'course', 'mentor']
+        fields = ['id', 'student', 'course', 'mentor']
 
 class MentorStudentUpdateMappingSerializer(serializers.ModelSerializer):
     

@@ -12,7 +12,8 @@ class ManagementModelsTest(TestCase):
         self.mentor = User.objects.create(username='mentor', first_name='Bharti', last_name='Mali', email='mentor@gmail.com', password='bharti', role='Mentor')
         self.student_details = Student.objects.get(student=self.student)
         self.mentor_course = Mentor.objects.get(mentor=self.mentor)
-        self.mentor_course.course.set = self.course
+        self.mentor_course.course.add(self.course)
+        self.mentor_course.save()
         self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course, mentor=self.mentor_course)
         
 ### Test cases for course model :
@@ -47,8 +48,8 @@ class ManagementModelsTest(TestCase):
 
     def test_create_mentor(self):
         mentor = Mentor.objects.get(mentor=self.mentor)
-        serializer = MentorsSerializer(mentor.course.all(), many=True)
-        self.assertEqual(serializer.data, [])
+        serializer = MentorsSerializer(mentor)
+        self.assertEqual(serializer.data['course'], ['Python'])
 
 ### Test cases for education-details model :
 

@@ -33,7 +33,7 @@ class ManagementSerializersTest(TestCase):
             'percentage': 81,
             'From': 2016,
             'Till': 2020,
-        }
+        }        
         
         # payloads to pass data in serializers
         self.UpdateStudentDetailsSerializer_data = {
@@ -48,11 +48,24 @@ class ManagementSerializersTest(TestCase):
         }
       
         self.UpdateEducationDetailsSerializer_data = {
-            'institution': 'amity',
-            'percentage': 81,
-            'From': 2006,
-            'Till': 2020,
+            'institution' : 'amity',
+            'percentage' : 81,
+            'From' : 2006,
+            'Till' : 2020,
         }
+        self.AddCourseSerializer_data = {
+            'course_name':  'java',
+        }
+        self.MentorsSerializer_data = {
+            'mentor' :  self.mentor,
+            'course' :  self.course
+        }
+        self.MentorStudentMappingSerializer_data = {
+            'student':  self.student,
+            'mentor' :  self.mentor,
+            'course' :  self.course
+        }
+
 
         ### Update student model object with dictionary data
         self.student_details = Student.objects.get(student=self.student)
@@ -78,7 +91,8 @@ class ManagementSerializersTest(TestCase):
         self.mentor_course = Mentor.objects.get(mentor=self.mentor)
 
         ### Assign course to mentor-course object
-        self.mentor_course.course.set = self.course
+        self.mentor_course.course.add(self.course)
+        self.mentor_course.save()
 
         ### Create mentor-student model object
         self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course, mentor=self.mentor_course)
@@ -86,6 +100,10 @@ class ManagementSerializersTest(TestCase):
         ### Create serializer with each model instance
         self.student_detail_serializer = UpdateStudentDetailsSerializer(instance=self.student_details)
         self.education_detail_serializer = UpdateEducationDetailsSerializer(instance=self.edu_details)
+        self.add_course_serializer = AddCourseSerializer(instance=self.course)
+        self.mentor_course_serializer = MentorsSerializer(instance=self.mentor_course)
+        self.mentor_course_mapping_serializer = MentorCourseMappingSerializer(instance=self.mentor_course)
+        self.mentor_course_student_serializer = MentorStudentMappingSerializer(instance=self.mentor_student)
 
 
 ### Test cases for UpdateStudentDetails :
@@ -331,3 +349,112 @@ class ManagementSerializersTest(TestCase):
         self.assertEqual(set(serializer.errors), set(['From', 'Till']))
 
 
+### Test cases for AddCourseSerializer :
+
+    def test_add_course_serializer_contains_expected_fields(self):
+        """
+            To check fields of AddCourseSerializer serializer 
+        """
+        data = self.add_course_serializer.data
+        self.assertCountEqual(data.keys(), ['id','course_name'])
+
+
+    def test_add_course_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.add_course_serializer.data
+        self.assertEqual(data['course_name'], 'Python')
+
+
+    def test_add_course_serializer_empty_fields_content(self):
+        """
+            To check if serializer is giving validation error if any field is empty
+        """
+        self.AddCourseSerializer_data['course_name'] = ''
+
+        serializer = AddCourseSerializer(data=self.AddCourseSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['course_name']))
+
+
+### Test cases for MentorsSerializer :
+
+    def test_mentor_course_serializer_contains_expected_fields(self):
+        """
+            To check fields of MentorsSerializer serializer 
+        """
+        data = self.mentor_course_serializer.data
+        self.assertCountEqual(data.keys(), ['id', 'mentor', 'course'])
+
+
+    def test_mentor_course_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.mentor_course_serializer.data
+        self.assertEqual(data['mentor'], 'mentor@gmail.com')
+        self.assertEqual(data['course'], ['Python'])        
+
+
+### Test cases for MentorCourseMappingSerializer :
+
+    def test_mentor_course_mapping_serializer_contains_expected_fields(self):
+        """
+            To check fields of MentorCourseMappingSerializer serializer 
+        """
+        data = self.mentor_course_mapping_serializer.data
+        self.assertCountEqual(data.keys(), ['id', 'mentor', 'course'])
+
+
+    def test_mentor_course_mapping_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.mentor_course_mapping_serializer.data
+        self.assertEqual(data['mentor'], 'mentor@gmail.com')
+        self.assertEqual(data['course'], [self.course.id])
+
+
+    def test_mentor_course_mapping_serializer_empty_fields_content(self):
+        """
+            To check if serializer is giving validation error if any field is empty
+        """
+        self.MentorsSerializer_data['course'] = ''
+
+        serializer = MentorCourseMappingSerializer(data=self.MentorsSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['course']))
+
+
+### Test cases for MentorStudentMappingSerializer :
+
+    def test_mentor_course_student_mapping_serializer_contains_expected_fields(self):
+        """
+            To check fields of MentorStudentMappingSerializer serializer 
+        """
+        data = self.mentor_course_student_serializer.data
+        self.assertCountEqual(data.keys(), ['id', 'mentor', 'student', 'course'])
+
+
+    def test_mentor_course_student_mapping_serializer_fields_content(self):
+        """ 
+            To check if the serialized data is same as payload given in model object for each field 
+        """
+        data = self.mentor_course_student_serializer.data
+        self.assertEqual(data['mentor'], self.mentor.mentor.id)
+        self.assertEqual(data['course'], self.course.id)
+        self.assertEqual(data['student'], self.student.student.id)
+
+
+    def test_mentor_course_student_mapping_serializer_empty_fields_content(self):
+        """
+            To check if serializer is giving validation error if any field is empty
+        # """
+        self.MentorStudentMappingSerializer_data['mentor'] = ''
+        self.MentorStudentMappingSerializer_data['course'] = ''
+        self.MentorStudentMappingSerializer_data['student'] = ''
+
+        serializer = MentorStudentMappingSerializer(data=self.MentorStudentMappingSerializer_data)
+        self.assertFalse(serializer.is_valid())        
+        self.assertEqual(set(serializer.errors), set(['mentor','student','course']))
