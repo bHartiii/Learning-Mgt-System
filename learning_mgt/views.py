@@ -12,7 +12,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateStudentDetailsSerializer
     queryset = Student.objects.all()
-    lookup_field = "id"
+    lookup_field = "student_id"
 
     def get_queryset(self):
         """
@@ -22,7 +22,7 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
         if role == 'Student':
             return self.queryset.filter(student=self.request.user)
         elif role == "Mentor" :
-            return self.queryset.filter(mentorstudent=self.request.user.id)
+            return self.queryset.filter(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id)
         else:
             return self.queryset.all()
 

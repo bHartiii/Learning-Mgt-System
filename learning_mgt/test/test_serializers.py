@@ -499,8 +499,6 @@ class ManagementSerializersTest(TestCase):
         # """
         self.MentorStudentMappingSerializer_data['mentor'] = ''
         self.MentorStudentMappingSerializer_data['course'] = ''
-        
-
         serializer = MentorStudentUpdateMappingSerializer(data=self.MentorStudentMappingSerializer_data)
         self.assertFalse(serializer.is_valid())        
         self.assertEqual(set(serializer.errors), set(['mentor','course']))
@@ -550,7 +548,7 @@ class ManagementSerializersTest(TestCase):
     def test_performance_serializer_empty_fields_content(self):
         """
             To check if serializer is giving validation error if any field is empty
-        # """
+        """
         self.PerformanceSerializer_data['current_score'] = ''
 
         serializer = PerformanceSerializer(data=self.PerformanceSerializer_data)
