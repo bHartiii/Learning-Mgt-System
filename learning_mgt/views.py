@@ -46,7 +46,7 @@ class EducationDetailsList(generics.ListAPIView):
         """        
         role = self.request.user.role
         if role == 'Student':
-            return EducationDetails.objects.filter(student=Student.objects.get(student=self.request.user))
+            return self.queryset.filter(student=Student.objects.get(student=self.request.user))
         elif role == "Mentor" :
             return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
         else:
@@ -65,9 +65,9 @@ class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
         """        
         role = self.request.user.role
         if role == 'Student':
-            return EducationDetails.objects.filter(student=self.request.user.student)
+            return self.queryset.filter(student=self.request.user.student)
         elif role == "Mentor" :
-            return self.queryset.filter(mentorstudent=self.request.user.id)
+            return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
         else:
             return self.queryset.all()
         

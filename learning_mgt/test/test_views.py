@@ -89,7 +89,7 @@ class ManagementAPITest(TestCase):
         self.education_details_invalid_data = {
             'institution': '121',
             'percentage': '81',
-            'From': 2016,
+            'From': '2016',
             'Till': 2020,
         } 
         self.admin_login_payload = {
@@ -296,5 +296,52 @@ class ManagementAPITest(TestCase):
         # To check if student can update other student's details after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+### Test cases for GET Method of UpdateEducationDetailsByCourse API : 
+
+    def test_get_student_details_by_course_without_login(self):
+        # To check if edu-details-by-course API is accessible without login
+        response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_student_details_by_course_for_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of edu-details-by-course  API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_student_details_by_course_for_admin_after_login(self):
+        # To check if GET method of edu-details-by-course  API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_student_details_by_course_for_mentor_after_login(self):
+        # To check if GET method of edu-details-by-course  API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_student_details_by_course_of_student_not_alloted_to_mentor(self):
+        # To check if details are updated with invalid data by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_student_details_by_course_for_student_after_login(self):
+        # To check if GET method of edu-details-by-course API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+        students = EducationDetails.objects.get(id=self.edu_details.id)
+        serializer = UpdateEducationDetailsSerializer(students)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_student_details_by_course_of_another_student_user_by_student_after_login(self):
+        # To check if student can get other student's details after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
