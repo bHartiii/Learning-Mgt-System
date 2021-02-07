@@ -250,10 +250,16 @@ class PerformanceAPI(generics.ListAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'Admin':
-            return self.queryset.all()
-        else:
-            return self.queryset.filter(mentor=user.id)
+        try:
+            if user.role == 'Admin':
+                performance = self.queryset.all()
+            elif user.role == 'Student':
+                performance = self.queryset.filter(student=Student.objects.get(student=user))
+            else:
+                performance = self.queryset.filter(mentor=Mentor.objects.get(mentor=user))
+            return performance
+        except Exception:
+            return []
 
 class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsMentorOrAdmin)

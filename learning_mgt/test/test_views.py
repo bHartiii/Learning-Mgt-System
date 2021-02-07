@@ -848,3 +848,62 @@ class ManagementAPITest(TestCase):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('mentor-student-details', kwargs={'student_id':self.student_details.id}), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+### Test cases for performance-list API 
+
+    def test_get_performance_list_without_login(self):
+        # To check if GET method of performance-list API is accessible without login
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_performance_list_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of performance-list API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_performances_list_by_admin_after_login(self):
+        # To check if GET method of performances-list API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        performances = Performance.objects.all()
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_list_by_mentor_after_login(self):
+        # To check if GET method of performance-list API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        performances = Performance.objects.filter(mentor=self.mentor_course)
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_list_of_another_mentors_student_by_mentor_after_login(self):
+        # To check if mentor can view other mentor's student performance
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        performances = Performance.objects.filter(mentor=self.mentor_course2)
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertNotEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_list_by_student_after_login(self):
+        # To check if GET method of performance-list API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        performances = Performance.objects.filter(student=self.student_details.id)
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_list_of_other_student_by_student_after_login(self):
+        # To check if student can view other student's performance
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance'), content_type=CONTENT_TYPE)
+        performances = Performance.objects.filter(student=self.student2_details.id)
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertNotEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
