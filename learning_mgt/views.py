@@ -131,11 +131,11 @@ class MentorCourseMapping(generics.GenericAPIView):
         if user.role=='Mentor':
             return self.queryset.filter(mentor=user.id)
         elif user.role == 'Admin':
-            return self.queryset.filter(id=mentor_id)
+            return self.queryset.filter(mentor=mentor_id)
 
     def put(self, request, mentor_id):
         try:
-            mentor = Mentor.objects.get(id = mentor_id)
+            mentor = Mentor.objects.get(mentor = mentor_id)
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             courses = serializer.validated_data['course']
