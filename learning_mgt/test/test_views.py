@@ -263,42 +263,42 @@ class ManagementAPITest(TestCase):
 
 ### Test cases for PUT Method of UpdateEducationDetailsByCourse API : 
 
-    def test_update_student_details_by_course_without_login(self):
+    def test_update_edu_details_by_course_without_login(self):
         # To check if edu-details-by-course API is accessible without login
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_student_details_by_course_for_user_after_login_with_invalid_credentials(self):
+    def test_update_edu_details_by_course_for_user_after_login_with_invalid_credentials(self):
         # To check if PUT method of edu-details-by-course  API is accessible by user after login with invalid credentials
         self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_student_details_by_course_for_admin_after_login(self):
+    def test_update_edu_details_by_course_for_admin_after_login(self):
         # To check if PUT method of edu-details-by-course  API is accessible by admin after login
         self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_student_details_by_course_for_mentor_after_login(self):
+    def test_update_edu_details_by_course_for_mentor_after_login(self):
         # To check if PUT method of edu-details-by-course  API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_student_details_by_course_for_student_after_login(self):
+    def test_update_edu_details_by_course_for_student_after_login(self):
         # To check if PUT method of edu-details-by-course API is accessible by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_student_details_by_course_for_student_with_invalid_data_after_login(self):
+    def test_update_edu_details_by_course_for_student_with_invalid_data_after_login(self):
         # To check if details are updated with invalid data by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), data=json.dumps(self.education_details_invalid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_update_student_details_by_course_of_another_student_user_by_student_after_login(self):
+    def test_update_edu_details_by_course_of_another_student_user_by_student_after_login(self):
         # To check if student can update other student's details after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), data=json.dumps(self.education_details_valid_data), content_type=CONTENT_TYPE)
@@ -307,36 +307,36 @@ class ManagementAPITest(TestCase):
 
 ### Test cases for GET Method of UpdateEducationDetailsByCourse API : 
 
-    def test_get_student_details_by_course_without_login(self):
+    def test_get_edu_details_by_course_without_login(self):
         # To check if edu-details-by-course API is accessible without login
         response = self.client.put(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_student_details_by_course_for_user_after_login_with_invalid_credentials(self):
+    def test_get_edu_details_by_course_for_user_after_login_with_invalid_credentials(self):
         # To check if GET method of edu-details-by-course  API is accessible by user after login with invalid credentials
         self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_student_details_by_course_for_admin_after_login(self):
+    def test_get_edu_details_by_course_for_admin_after_login(self):
         # To check if GET method of edu-details-by-course  API is accessible by admin after login
         self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_student_details_by_course_for_mentor_after_login(self):
+    def test_get_edu_details_by_course_for_mentor_after_login(self):
         # To check if GET method of edu-details-by-course  API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_student_details_by_course_of_student_not_alloted_to_mentor(self):
+    def test_get_edu_details_by_course_of_student_not_alloted_to_mentor(self):
         # To check if details are updated with invalid data by student after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_student_details_by_course_for_student_after_login(self):
+    def test_get_edu_details_by_course_for_student_after_login(self):
         # To check if GET method of edu-details-by-course API is accessible by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
@@ -345,7 +345,7 @@ class ManagementAPITest(TestCase):
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_student_details_by_course_of_another_student_user_by_student_after_login(self):
+    def test_get_edu_details_by_course_of_another_student_user_by_student_after_login(self):
         # To check if student can get other student's details after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details_2.id}), content_type=CONTENT_TYPE)
@@ -376,7 +376,7 @@ class ManagementAPITest(TestCase):
         response = self.client.get(reverse('courses'), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_edu_details_list_by_student_after_login(self):
+    def test_get_course_list_by_student_after_login(self):
         # To check if GET method of courses-list API is accessible by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('courses'), content_type=CONTENT_TYPE)
@@ -414,8 +414,109 @@ class ManagementAPITest(TestCase):
         response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_edu_details_list_by_student_after_login(self):
+    def test_get_course_list_by_student_after_login(self):
         # To check if POST method of courses-create API is accessible by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+### Test cases for GET method of course-details API 
+
+    def test_get_course_details_without_login(self):
+        # To check if GET method of courses-details API is accessible without login
+        response = self.client.get(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_course_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of courses-details API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_course_details_by_admin_after_login(self):
+        # To check if GET method of courses-create API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_course_details_by_mentor_after_login(self):
+        # To check if GET method of courses-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_course_details_by_student_after_login(self):
+        # To check if GET method of courses-details API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+### Test cases for PUT method of course-details API 
+
+    def test_update_course_details_without_login(self):
+        # To check if PUT method of courses-details API is accessible without login
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.valid_course_data) , content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_course_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if PUT method of courses-details API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_course_details_by_admin_after_login(self):
+        # To check if PUT method of courses-create API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_course_details_by_admin_with_invalid_data_after_login(self):
+        # To check if admin gives invalid data to create course
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.invalid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_course_details_by_mentor_after_login(self):
+        # To check if PUT method of courses-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_course_details_by_student_after_login(self):
+        # To check if PUT method of courses-details API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('course', kwargs={'id':self.course1.id}), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+### Test cases for DELETE method of course-details API 
+
+    def test_delete_course_details_without_login(self):
+        # To check if DELETE method of courses-details API is accessible without login
+        response = self.client.delete(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_course_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if DELETE method of courses-details API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_course_details_by_admin_after_login(self):
+        # To check if DELETE method of courses-create API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_course_details_by_mentor_after_login(self):
+        # To check if DELETE method of courses-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_course_details_by_student_after_login(self):
+        # To check if DELETE method of courses-details API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('course', kwargs={'id':self.course1.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
