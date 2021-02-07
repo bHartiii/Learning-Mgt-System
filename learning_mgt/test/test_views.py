@@ -111,6 +111,12 @@ class ManagementAPITest(TestCase):
         self.invalid_login_payload = {
             'username' : 'bharti',
             'password' : 'bharti'
+        }
+        self.valid_course_data = {
+            'course_name' : 'bharti'
+        }
+        self.invalid_course_data = {
+            'course_name' : ''
         }       
 
 
@@ -374,4 +380,42 @@ class ManagementAPITest(TestCase):
         # To check if GET method of courses-list API is accessible by student after login
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('courses'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+### Test cases for course-create API 
+
+    def test_get_course_list_without_login(self):
+        # To check if POST method of courses-create API is accessible without login
+        response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data) , content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_course_list_by_user_after_login_with_invalid_credentials(self):
+        # To check if POST method of courses-create API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_course_list_by_admin_after_login(self):
+        # To check if POST method of courses-create API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_course_list_by_admin_with_invalid_data_after_login(self):
+        # To check if admin gives invalid data to create course
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('courses'), data=json.dumps(self.invalid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_course_list_by_mentor_after_login(self):
+        # To check if POST method of courses-create API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_edu_details_list_by_student_after_login(self):
+        # To check if POST method of courses-create API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('courses'), data=json.dumps(self.valid_course_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
