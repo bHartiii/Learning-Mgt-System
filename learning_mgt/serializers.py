@@ -67,7 +67,7 @@ class PerformanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Performance
-        fields = ['id','student', 'course', 'mentor','current_score', 'created_by', 'updated_by']
+        fields = ['id','student', 'course', 'mentor','current_score', 'created_by', 'updated_at','updated_by']
 
 
 

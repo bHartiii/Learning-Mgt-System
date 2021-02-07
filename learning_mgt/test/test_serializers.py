@@ -398,7 +398,7 @@ class ManagementSerializersTest(TestCase):
             To check fields of MentorsSerializer serializer 
         """
         data = self.mentor_course_serializer.data
-        self.assertCountEqual(data.keys(), ['id', 'mentor', 'course'])
+        self.assertCountEqual(data.keys(), ['id','mentor_id', 'mentor', 'course'])
 
 
     def test_mentor_course_serializer_fields_content(self):
@@ -417,7 +417,7 @@ class ManagementSerializersTest(TestCase):
             To check fields of MentorCourseMappingSerializer serializer 
         """
         data = self.mentor_course_mapping_serializer.data
-        self.assertCountEqual(data.keys(), ['id', 'mentor', 'course'])
+        self.assertCountEqual(data.keys(), ['id', 'mentor_id', 'mentor', 'course'])
 
 
     def test_mentor_course_mapping_serializer_fields_content(self):

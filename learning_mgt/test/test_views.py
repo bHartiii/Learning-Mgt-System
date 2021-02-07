@@ -993,6 +993,12 @@ class ManagementAPITest(TestCase):
         response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_performance_by_admin_with_invalid_data_after_login(self):
+        # To check if PUT method of performance-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_invalid_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_update_performance_by_mentor_after_login(self):
         # To check if PUT method of performance-details API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
