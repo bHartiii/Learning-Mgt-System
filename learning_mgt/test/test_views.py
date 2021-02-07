@@ -5,6 +5,7 @@ from ..models import User
 from learning_mgt.models import Mentor, Student, EducationDetails, Performance, MentorStudent, Course
 from ..serializers import UpdateEducationDetailsSerializer, UpdateStudentDetailsSerializer, MentorsSerializer, MentorCourseMappingSerializer, MentorStudentMappingSerializer, MentorStudentUpdateMappingSerializer, MentorStudentListSerializer, PerformanceSerializer
 import json
+from rest_framework.response import Response
 
 CONTENT_TYPE = 'application/json'
 class ManagementAPITest(TestCase):
@@ -17,31 +18,39 @@ class ManagementAPITest(TestCase):
         self.admin = User.objects.create(username='admin', first_name='Bharti', last_name='Mali', role='Admin', email='admin@gmail.com', password='pbkdf2_sha256$216000$yG97oIyabA7B$nzM1GiofqbxOqH/prQTgjDWhT1C7o1cpj0VdJ5viW0M=', first_login=True)
         self.student = User.objects.create(username='student1', first_name='Bharti', last_name='Mali', role='Student', email='student@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
         self.student2 = User.objects.create(username='student2', first_name='Bharti', last_name='Mali', role='Student', email='student2@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
+        self.student3 = User.objects.create(username='student3', first_name='Bharti', last_name='Mali', role='Student', email='student3@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
         self.mentor = User.objects.create(username='mentor', first_name='Bharti', last_name='Mali', role='Mentor', email='mentor@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
         self.mentor2 = User.objects.create(username='mentor2', first_name='Bharti', last_name='Mali', role='Mentor', email='mentor2@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
+        self.mentor3 = User.objects.create(username='mentor3', first_name='Bharti', last_name='Mali', role='Mentor', email='mentor3@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
 
 
         # Create course model object
         self.course1 = Course.objects.create(course_name='Python')
         self.course2 = Course.objects.create(course_name='Java')
+        self.course3 = Course.objects.create(course_name='Django')
         
         # Create student model object 
         self.student_details = Student.objects.get(student=self.student)
         self.student2_details = Student.objects.get(student=self.student2)
+        self.student3_details = Student.objects.get(student=self.student3)
         
         # Create education-details model 
         self.edu_details = EducationDetails.objects.get(student=self.student_details, course='UG')
         self.edu_details_2 = EducationDetails.objects.get(student=self.student2_details, course='UG')
+        self.edu_details_3 = EducationDetails.objects.get(student=self.student3_details, course='UG')
         
         # Create mentor-course object
         self.mentor_course = Mentor.objects.get(mentor=self.mentor)
         self.mentor_course2 = Mentor.objects.get(mentor=self.mentor2)
+        self.mentor_course3 = Mentor.objects.get(mentor=self.mentor3)
 
         # Assign course to mentor-course object
         self.mentor_course.course.add(self.course1)
         self.mentor_course.save()
         self.mentor_course2.course.add(self.course2)
         self.mentor_course2.save()
+        self.mentor_course3.course.add(self.course3)
+        self.mentor_course3.save()
 
         # Create mentor-student model object
         self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course1, mentor=self.mentor_course)
@@ -124,6 +133,17 @@ class ManagementAPITest(TestCase):
         self.mentor_course_invalid_data = {
             'course': self.course1.id
         }
+        self.mentor_student_data = {
+            'student':  self.student3_details.id,
+            'mentor' :  self.mentor_course3.id,
+            'course' :  self.course3.id
+        }
+        self.mentor_student_invalid_data = {
+            'student':  self.student_details.id,
+            'mentor' :  self.mentor_course.id,
+            'course' :  self.course2.id
+        }
+
 ### Test cases for PUT Method of student-details API : 
 
     def test_update_student_details_without_login(self):
@@ -189,8 +209,11 @@ class ManagementAPITest(TestCase):
     def test_get_student_details_by_mentor_after_login(self):
         # To check if GET method of student-details API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.get(reverse('student-details', kwargs={'student_id': self.student.id}), content_type=CONTENT_TYPE)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        try:
+            response = self.client.get(reverse('student-details', kwargs={'student_id': self.student.id}), content_type=CONTENT_TYPE)          
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        except Exception:
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_student_details_of_student_not_alloted_by_mentor_after_login(self):
         # To check if student-details of another mentor's student are accessible by mentor after login
@@ -234,18 +257,24 @@ class ManagementAPITest(TestCase):
         # To check if GET method of edu-details-list API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
-        students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor.id).id))
-        serializer = UpdateEducationDetailsSerializer(students, many=True)
-        self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        try:
+            students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor.id).id))
+            serializer = UpdateEducationDetailsSerializer(students, many=True)
+            self.assertEqual(response.data, serializer.data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        except Exception:
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_edu_details_list_of_student_not_alloted_by_mentor_after_login(self):
         # To check if edu-details-list of another mentor's student are accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
-        students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor2.id).id))
-        serializer = UpdateEducationDetailsSerializer(students, many=True)
-        self.assertNotEqual(response.data, serializer.data)
+        try:
+            students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor2.id).id))
+            serializer = UpdateEducationDetailsSerializer(students, many=True)
+            self.assertNotEqual(response.data, serializer.data)
+        except Exception:
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_edu_details_list_by_student_after_login(self):
         # To check if GET method of edu-details-list API is accessible by student after login
@@ -331,8 +360,11 @@ class ManagementAPITest(TestCase):
     def test_get_edu_details_by_course_for_mentor_after_login(self):
         # To check if GET method of edu-details-by-course  API is accessible by mentor after login
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        try:
+            response = self.client.get(reverse('edu-details', kwargs={'id': self.edu_details.id}), content_type=CONTENT_TYPE)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        except Exception:
+            return self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_edu_details_by_course_of_student_not_alloted_to_mentor(self):
         # To check if details are updated with invalid data by student after login
@@ -594,3 +626,138 @@ class ManagementAPITest(TestCase):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.put(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), data=json.dumps(self.mentor_course_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+### Test cases for GET method of mentor-course API 
+
+    def test_get_mentor_course_details_without_login(self):
+        # To check if GET method of mentor-course API is accessible without login
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_mentor_course_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of mentor-course API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_mentor_course_details_by_admin_after_login(self):
+        # To check if GET method of mentor-course API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_mentor_course_details_by_mentor_after_login(self):
+        # To check if GET method of mentor-course API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), content_type=CONTENT_TYPE)
+        mentor = Mentor.objects.filter(mentor=self.mentor.id)
+        serializer = MentorsSerializer(mentor, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_mentor_course_details_of_another_mentor_by_mentor_user_after_login(self):
+        # To check if mentor can view other mentor's data
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor2.id}), content_type=CONTENT_TYPE)
+        mentor = Mentor.objects.filter(mentor=self.mentor2.id)
+        serializer = MentorsSerializer(mentor, many=True)
+        self.assertNotEqual(response.data, serializer.data)
+
+    def test_get_mentor_course_details_by_student_after_login(self):
+        # To check if GET method of mentor-course API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-course', kwargs={'mentor_id':self.mentor.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+
+### Test cases for POST method of MentorStudentMapping API 
+
+    def test_mentor_student_details_without_login(self):
+        # To check if POST method of mentor-student API is accessible without login
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_data) , content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_mentor_student_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if POST method of mentor-student API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_mentor_student_details_by_admin_after_login(self):
+        # To check if POST method of mentor-student API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_mentor_student_details_by_admin_with_invalid_data_after_login(self):
+        # To check if admin gives invalid data to map mentor-student
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_invalid_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_mentor_student_details_by_mentor_after_login(self):
+        # To check if POST method of mentor-student API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_mentor_student_details_by_student_after_login(self):
+        # To check if POST method of mentor-student API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.post(reverse('mentor-student'), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+### Test cases for GET method of MentorStudentMapping API 
+
+    def test_get_mentor_student_details_without_login(self):
+        # To check if GET method of mentor-student API is accessible without login
+        response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_mentor_student_details_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of mentor-student API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_mentor_student_details_by_admin_after_login(self):
+        # To check if GET method of mentor-student API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_mentor_student_details_by_mentor_after_login(self):
+        # To check if GET method of mentor-student API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        try:
+            response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)
+            mentor = MentorStudent.objects.filter(mentor=self.mentor_course.id)
+            serializer = MentorStudentListSerializer(mentor, many=True)
+            self.assertEqual(response.data['response'], serializer.data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        except Exception :
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_mentor_student_details_of_other_mentor_by_mentor_after_login(self):
+        # To check if mentor can view other mentor's data
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        try:
+            response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)   
+            mentor = MentorStudent.objects.filter(mentor=self.mentor_course2.id)
+            serializer = MentorStudentListSerializer(mentor, many=True)
+            self.assertNotEqual(response.data, serializer.data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        except Exception :
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_mentor_student_details_by_student_after_login(self):
+        # To check if GET method of mentor-student API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('mentor-student'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        
+
+

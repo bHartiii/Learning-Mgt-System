@@ -19,12 +19,15 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
             Returns current logged in student profile instance
         """        
         role = self.request.user.role
-        if role == 'Student':
-            return self.queryset.filter(student=self.request.user)
-        elif role == "Mentor" :
-            return self.queryset.filter(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id)
-        else:
-            return self.queryset.all()
+        try:
+            if role == 'Student':
+                return self.queryset.filter(student=self.request.user)
+            elif role == "Mentor" :
+                return self.queryset.filter(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id)
+            else:
+                return self.queryset.all()
+        except Exception:
+            return []
 
     def perform_update(self, serializer):
         """
@@ -45,12 +48,15 @@ class EducationDetailsList(generics.ListAPIView):
             Returns current logged in student profile instance
         """        
         role = self.request.user.role
-        if role == 'Student':
-            return self.queryset.filter(student=Student.objects.get(student=self.request.user))
-        elif role == "Mentor" :
-            return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
-        else:
-            return self.queryset.all()
+        try:
+            if role == 'Student':
+                return self.queryset.filter(student=Student.objects.get(student=self.request.user))
+            elif role == "Mentor" :
+                return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
+            else:
+                return self.queryset.all()
+        except Exception:
+            return []
 
 
 class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
@@ -64,12 +70,15 @@ class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
             Returns current logged in student profile instance
         """        
         role = self.request.user.role
-        if role == 'Student':
-            return self.queryset.filter(student=self.request.user.student)
-        elif role == "Mentor" :
-            return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
-        else:
-            return self.queryset.all()
+        try:
+            if role == 'Student':
+                return self.queryset.filter(student=self.request.user.student)
+            elif role == "Mentor" :
+                return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
+            else:
+                return self.queryset.all()
+        except Exception:
+            return []
         
     def perform_update(self, serializer):
         """
@@ -153,7 +162,7 @@ class MentorCourseMapping(generics.GenericAPIView):
             mentor = self.get_queryset(mentor_id)
             if mentor:
                 serializer = MentorsSerializer(mentor, many=True)
-                return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({'response':'Not Found'}, status=status.HTTP_404_NOT_FOUND)
         except Mentor.DoesNotExist:
@@ -178,12 +187,15 @@ class MentorStudentMapping(generics.GenericAPIView):
             return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self,request):
-        if request.user.role == 'Admin':
-            students = self.queryset.all()
-        else:
-            students = self.queryset.filter(mentor=Mentor.objects.get(mentor=request.user))
-        serializer = MentorStudentListSerializer(students, many=True)
-        return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+        try:
+            if request.user.role == 'Admin':
+                students = self.queryset.all()
+            else:
+                students = self.queryset.filter(mentor=Mentor.objects.get(mentor=request.user))
+            serializer = MentorStudentListSerializer(students, many=True)
+            return Response({'response':serializer.data}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'response':'No mentor-student mapping is done for you!!!'}, status=status.HTTP_404_NOT_FOUND)
 
 class MentorStudentDetails(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, IsMentor)
