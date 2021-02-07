@@ -201,40 +201,45 @@ class MentorStudentDetails(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, IsMentor)
     serializer_class = MentorStudentUpdateMappingSerializer
     
-    def get_queryset(self, search_id):
+    def get_queryset(self, student_id):
         user = self.request.user
         try:
             if self.request.user.role == 'Admin':
-                students = MentorStudent.objects.get(id=search_id)
+                students = MentorStudent.objects.get(student=student_id)
             else:
-                students = MentorStudent.objects.get(id=search_id, mentor=Mentor.objects.get(mentor=user))
+                students = MentorStudent.objects.get(student=student_id, mentor=Mentor.objects.get(mentor=user))
             return students
         except MentorStudent.DoesNotExist:
             return Response({'response': 'This record does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        
+        except Exception:
+            return Response({'response': 'Something went wrong!!!!'}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, search_id):
-        students = self.get_queryset(search_id)
+    def put(self, request, student_id):
+        students = self.get_queryset(student_id)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         mentor_data = serializer.validated_data['mentor']
         course_data = serializer.validated_data['course']
-        mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
-        if course_data in mentor.course.all():
-            students.course = course_data
-            students.mentor = mentor
-            students.save(updated_by=user)
-            return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            mentor = Mentor.objects.get(mentor=User.objects.get(email=mentor_data))
+            if course_data in mentor.course.all():
+                students.course = course_data
+                students.mentor = mentor
+                students.updated_by = request.user
+                students.save()
+                return Response({'response':'Mentor added successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'response':'This mentor is not assigned for this course!!!'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({'response':'Something went wrong!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self,request,search_id ):
-        students = self.get_queryset(search_id)
+    def get(self,request,student_id ):
+        students = self.get_queryset(student_id)
         serializer = MentorStudentListSerializer(students)
         return Response({'response':serializer.data}, status=status.HTTP_200_OK)
 
-    def delete(self, request, search_id):   
-        students = self.get_queryset(search_id)
+    def delete(self, request, student_id):   
+        students = self.get_queryset(student_id)
         students.delete()
         return Response({'response': 'Record is deleted successfully!!'}, status=status.HTTP_204_NO_CONTENT)
 
