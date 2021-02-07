@@ -143,6 +143,12 @@ class ManagementAPITest(TestCase):
             'mentor' :  self.mentor_course.id,
             'course' :  self.course2.id
         }
+        self.performance_data = {
+            'current_score' : 3.43
+        }
+        self.performance_invalid_data = {
+            'current_score' : ''
+        }
 
 ### Test cases for PUT Method of student-details API : 
 
@@ -907,3 +913,110 @@ class ManagementAPITest(TestCase):
         serializer = PerformanceSerializer(performances, many=True)
         self.assertNotEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+### Test cases for GET method for performance-details API 
+
+    def test_get_performance_without_login(self):
+        # To check if GET method of performance-details API is accessible without login
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_performance_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of performance-details API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_performances_by_admin_after_login(self):
+        # To check if GET method of performances-details API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        performances = Performance.objects.get(id=self.performance.id)
+        serializer = PerformanceSerializer(performances)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_by_mentor_after_login(self):
+        # To check if GET method of performance-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        performances = Performance.objects.get(id=self.performance.id, mentor=self.mentor_course)
+        serializer = PerformanceSerializer(performances)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_of_another_mentors_student_by_mentor_after_login(self):
+        # To check if mentor can view other mentor's student performance-details
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        performances = Performance.objects.get(id=self.performance2.id, mentor=self.mentor_course2)
+        serializer = PerformanceSerializer(performances)
+        self.assertNotEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_by_student_after_login(self):
+        # To check if GET method of performance-details API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        performances = Performance.objects.get(id=self.performance.id, student=self.student_details.id)
+        serializer = PerformanceSerializer(performances)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_performance_of_other_student_by_student_after_login(self):
+        # To check if student can view other student's performance-details
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('performance-details', kwargs={'id':self.performance.id}), content_type=CONTENT_TYPE)
+        performances = Performance.objects.get(id=self.performance2.id, student=self.student2_details.id)
+        serializer = PerformanceSerializer(performances)
+        self.assertNotEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+### Test cases for PUT method for performance-details API 
+
+    def test_update_performance_without_login(self):
+        # To check if PUT method of performance-details API is accessible without login
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_performance_by_user_after_login_with_invalid_credentials(self):
+        # To check if PUT method of performance-details API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_performances_by_admin_after_login(self):
+        # To check if PUT method of performances-details API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.mentor_student_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_performance_by_mentor_after_login(self):
+        # To check if PUT method of performance-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_performance_by_mentor_with_invalid_data_after_login(self):
+        # To check if PUT method of performance-details API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_invalid_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_performance_of_another_mentors_student_by_mentor_after_login(self):
+        # To check if mentor can view other mentor's student performance-details
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_data), content_type=CONTENT_TYPE)
+        performances = Performance.objects.filter(id=self.performance2.id, mentor=self.mentor_course2)
+        serializer = PerformanceSerializer(performances, many=True)
+        self.assertNotEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_performance_by_student_after_login(self):
+        # To check if PUT method of performance-details API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('performance-details', kwargs={'id':self.performance.id}), data=json.dumps(self.performance_data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+

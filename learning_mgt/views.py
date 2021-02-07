@@ -270,9 +270,12 @@ class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'Admin':
-            return self.queryset.all()
+            performance = self.queryset.all()
+        elif user.role == 'Student':
+            performance = self.queryset.filter(student=Student.objects.get(student=user))
         else:
-            return self.queryset.filter(mentor=user.id)
+            performance = self.queryset.filter(mentor=Mentor.objects.get(mentor=user))
+        return performance
 
     def perform_update(self, serializer):
         user = self.request.user
