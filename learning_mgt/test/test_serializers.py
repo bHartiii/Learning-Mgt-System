@@ -126,7 +126,7 @@ class ManagementSerializersTest(TestCase):
             To check fields of UpdateStudentDetailsSerializer serializer 
         """
         data = self.student_detail_serializer.data
-        self.assertCountEqual(data.keys(), ['id', 'student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp'])
+        self.assertCountEqual(data.keys(), ['id', 'student_id', 'student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp'])
 
 
     def test_update_student_details_serializer_fields_content(self):
@@ -268,7 +268,7 @@ class ManagementSerializersTest(TestCase):
             To check fields of UpdateEducationDetailsSerializer serializer 
         """
         data = self.education_detail_serializer.data
-        self.assertCountEqual(data.keys(), ['id','student', 'course', 'institution', 'percentage', 'From', 'Till'])
+        self.assertCountEqual(data.keys(), ['id','student_id', 'student', 'course', 'institution', 'percentage', 'From', 'Till'])
 
 
     def test_update_education_details_serializer_fields_content(self):

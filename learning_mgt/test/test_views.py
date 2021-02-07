@@ -18,30 +18,45 @@ class ManagementAPITest(TestCase):
         self.student = User.objects.create(username='student1', first_name='Bharti', last_name='Mali', role='Student', email='student@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
         self.student2 = User.objects.create(username='student2', first_name='Bharti', last_name='Mali', role='Student', email='student2@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
         self.mentor = User.objects.create(username='mentor', first_name='Bharti', last_name='Mali', role='Mentor', email='mentor@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
+        self.mentor2 = User.objects.create(username='mentor2', first_name='Bharti', last_name='Mali', role='Mentor', email='mentor2@gmail.com', password='pbkdf2_sha256$216000$jge4gjoUWquH$RqjqlYMi9gKUAEItd91thLEwpewzUn5WOfL2TdsLyjY=', first_login=True)
+
 
         # Create course model object
-        self.course = Course.objects.create(course_name='Python')
+        self.course1 = Course.objects.create(course_name='Python')
+        self.course2 = Course.objects.create(course_name='Java')
         
         # Create student model object 
         self.student_details = Student.objects.get(student=self.student)
+        self.student2_details = Student.objects.get(student=self.student2)
         
         # Create education-details model 
         self.edu_details = EducationDetails.objects.get(student=self.student_details, course='UG')
+        self.edu_details_2 = EducationDetails.objects.get(student=self.student2_details, course='UG')
         
         # Create mentor-course object
         self.mentor_course = Mentor.objects.get(mentor=self.mentor)
+        self.mentor_course2 = Mentor.objects.get(mentor=self.mentor2)
 
         # Assign course to mentor-course object
-        self.mentor_course.course.add(self.course)
+        self.mentor_course.course.add(self.course1)
         self.mentor_course.save()
+        self.mentor_course2.course.add(self.course2)
+        self.mentor_course2.save()
 
         # Create mentor-student model object
-        self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course, mentor=self.mentor_course)
+        self.mentor_student = MentorStudent.objects.create(student=self.student_details , course=self.course1, mentor=self.mentor_course)
+        self.mentor_student2 = MentorStudent.objects.create(student=self.student2_details , course=self.course2, mentor=self.mentor_course2)
+
 
         # Update performance model object : 
         self.performance = Performance.objects.get(student=self.student_details)
         self.performance.current_score = 3
         self.performance.save()
+
+        self.performance2 = Performance.objects.get(student=self.student2_details)
+        self.performance2.current_score = 4
+        self.performance2.save()
+
 
         self.student_details_valid_data = {
             'image': None,
@@ -103,7 +118,7 @@ class ManagementAPITest(TestCase):
 
     def test_update_student_details_without_login(self):
         # To check if student-details API is accessible without login
-        response = self.client.put(reverse('student-details', kwargs={'student_id': self.student.id}), data=json.dumps(self.student_details_valid_data), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('student-details', kwargs={'student_id': self.student_details.id}), data=json.dumps(self.student_details_valid_data), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_student_details_by_user_after_login_with_invalid_credentials(self):
@@ -184,6 +199,60 @@ class ManagementAPITest(TestCase):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
         response = self.client.get(reverse('student-details', kwargs={'student_id': self.student2.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+### Test cases for GET Method of edu-details-list API : 
+
+    def test_get_edu_details_list_without_login(self):
+        # To check if GET method of edu-details-list API is accessible without login
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_edu_details_list_by_user_after_login_with_invalid_credentials(self):
+        # To check if GET method of edu-details-list API is accessible by user after login with invalid credentials
+        self.client.post(reverse('login'), data=json.dumps(self.invalid_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_edu_details_list_by_admin_after_login(self):
+        # To check if GET method of edu-details-list API is accessible by admin after login
+        self.client.post(reverse('login'), data=json.dumps(self.admin_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_edu_details_list_by_mentor_after_login(self):
+        # To check if GET method of edu-details-list API is accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor.id).id))
+        serializer = UpdateEducationDetailsSerializer(students, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_edu_details_list_of_student_not_alloted_by_mentor_after_login(self):
+        # To check if edu-details-list of another mentor's student are accessible by mentor after login
+        self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        students = EducationDetails.objects.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.mentor2.id).id))
+        serializer = UpdateEducationDetailsSerializer(students, many=True)
+        self.assertNotEqual(response.data, serializer.data)
+
+    def test_get_edu_details_list_by_student_after_login(self):
+        # To check if GET method of edu-details-list API is accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        students = EducationDetails.objects.filter(student=self.student_details.id)
+        serializer = UpdateEducationDetailsSerializer(students, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_edu_details_list_of_another_student_by_student_after_login(self):
+        # To check if edu-details-list of another student are accessible by student after login
+        self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
+        response = self.client.get(reverse('edu-details-list'), content_type=CONTENT_TYPE)
+        students = EducationDetails.objects.filter(student=self.student2_details.id)
+        serializer = UpdateEducationDetailsSerializer(students, many=True)
+        self.assertNotEqual(response.data, serializer.data)
 
 
 

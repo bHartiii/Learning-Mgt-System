@@ -39,7 +39,6 @@ class EducationDetailsList(generics.ListAPIView):
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
-    lookup_field = "student_id"
 
     def get_queryset(self):
         """
@@ -47,9 +46,9 @@ class EducationDetailsList(generics.ListAPIView):
         """        
         role = self.request.user.role
         if role == 'Student':
-            return EducationDetails.objects.filter(student=self.request.user.student)
+            return EducationDetails.objects.filter(student=Student.objects.get(student=self.request.user))
         elif role == "Mentor" :
-            return self.queryset.filter(mentorstudent=self.request.user.id)
+            return self.queryset.filter(student=Student.objects.get(mentorstudent=Mentor.objects.get(mentor= self.request.user.id).id))
         else:
             return self.queryset.all()
 
@@ -143,7 +142,8 @@ class MentorCourseMapping(generics.GenericAPIView):
             for course_data in courses:
                 course = Course.objects.get(course_name=course_data)
                 mentor.course.add(course.id)
-                mentor.save(updated_by=self.request.user)
+                mentor.updated_by=self.request.user
+                mentor.save()
             return Response({'response':'Course added successfully.'}, status=status.HTTP_200_OK)
         except Mentor.DoesNotExist:
             return Response({'response':'Mentor does not exist'}, status=status.HTTP_404_NOT_FOUND)

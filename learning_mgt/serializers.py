@@ -9,15 +9,16 @@ class UpdateStudentDetailsSerializer(serializers.ModelSerializer):
     relation_with_alternate_contact = serializers.RegexField("[a-zA-Z]{3,}", max_length=50)
     class Meta:
         model = Student
-        fields = ['id', 'student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp']
+        fields = ['id','student_id','student', 'image', 'contact', 'alternate_contact', 'relation_with_alternate_contact','current_location','Address','git_link','yr_of_exp']
+        extra_kwargs = {'student_id':{'read_only':True}}
 
 class UpdateEducationDetailsSerializer(serializers.ModelSerializer):
     student = serializers.StringRelatedField(read_only=True)
     institution = serializers.RegexField("[a-zA-Z]{3,}", max_length=50)
     class Meta:
         model = EducationDetails
-        fields = ['id','student', 'course', 'institution', 'percentage', 'From', 'Till']
-        extra_kwargs = {'course':{'read_only':True}}
+        fields = ['id','student_id', 'student', 'course', 'institution', 'percentage', 'From', 'Till']
+        extra_kwargs = {'course':{'read_only':True}, 'student_id':{'read_only':True}}
 
 class AddCourseSerializer(serializers.ModelSerializer):
     class Meta:
