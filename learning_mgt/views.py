@@ -9,6 +9,15 @@ from authentication.models import User
 
 
 class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to get and update .
+        --------
+        Methods:
+            get_queryset : It will let authorized user to get student-details.
+            perform_update : Student will able to update the details.
+    """
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateStudentDetailsSerializer
     queryset = Student.objects.all()
@@ -39,6 +48,14 @@ class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
 
 
 class EducationDetailsList(generics.ListAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to get education-details.
+        --------
+        Methods:
+            get_queryset : It will let authorized user to get education-details based on the user-role.
+    """
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
@@ -60,6 +77,15 @@ class EducationDetailsList(generics.ListAPIView):
 
 
 class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to get education-details by course.
+        --------
+        Methods:
+            get_queryset : It will return single record of education details.
+            perform_update : Student will able to update the details.
+    """
     permission_classes = (IsAuthenticated, IsStudent)
     serializer_class = UpdateEducationDetailsSerializer
     queryset = EducationDetails.objects.all()
@@ -90,6 +116,15 @@ class UpdateEducationDetailsByCourse(generics.RetrieveUpdateAPIView):
 
 
 class Courses(generics.ListCreateAPIView):
+    """
+        Summary:
+        --------
+            This class will let admin to create and list courses.
+        --------
+        Methods:
+            get_queryset : Admin will get all the courses.
+            perform_create : Admin will able to create new course.
+    """
     permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = AddCourseSerializer
 
@@ -107,6 +142,15 @@ class Courses(generics.ListCreateAPIView):
         return Response({'response': course}, status=status.HTTP_201_CREATED)
 
 class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
+    """
+        Summary:
+        --------
+            This class will let admin user to get, update, delete course.
+        --------
+        Methods:
+            perform_update : Admin will be update the course.
+            perform_destroy : Admin will be able to delete the course.
+    """
     permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = AddCourseSerializer
     queryset = Course.objects.all()
@@ -122,6 +166,14 @@ class CourseDetails(generics.RetrieveUpdateDestroyAPIView):
         
 
 class Mentors(generics.ListAPIView):
+    """
+        Summary:
+        --------
+            This class will let admin to get all mentors.
+        --------
+        Methods:
+            get_queryset : It will return mentor list.
+    """
     permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = MentorsSerializer
     queryset = Mentor.objects.all()
@@ -131,6 +183,16 @@ class Mentors(generics.ListAPIView):
 
 
 class MentorCourseMapping(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let admin to map mentor and courses.
+        --------
+        Methods:
+            get_queryset : It return queryset according to user role.
+            get : It will return mentor-courses details by mentor_id.
+            put : The courses will be added to fetched mentor.
+    """
     permission_classes = (IsAuthenticated, IsMentor)
     serializer_class = MentorCourseMappingSerializer
     queryset = Mentor.objects.all()
@@ -170,6 +232,15 @@ class MentorCourseMapping(generics.GenericAPIView):
 
 
 class MentorStudentMapping(generics.GenericAPIView):
+     """
+        Summary:
+        --------
+            This class will let admin to map mentor-course and students.
+        --------
+        Methods:
+            get : It will return mentor-courses details according to user role.
+            post : It will create a new record to map student and mentor-course.
+    """
     permission_classes = (IsAuthenticated, IsMentor)
     serializer_class = MentorStudentMappingSerializer
     queryset = MentorStudent.objects.all()
@@ -198,6 +269,16 @@ class MentorStudentMapping(generics.GenericAPIView):
             return Response({'response':'No mentor-student mapping is done for you!!!'}, status=status.HTTP_404_NOT_FOUND)
 
 class MentorStudentDetails(generics.GenericAPIView):
+     """
+        Summary:
+        --------
+            This class will let admin to get and update the details of mapped mentor-course and students.
+        --------
+        Methods:
+            get_queryset : It return queryset according to user role and student_id.
+            get : It will return mentor-courses details by student_id.
+            put : The courses or mentor can be updated to fetched student.
+    """
     permission_classes = (IsAuthenticated, IsMentor)
     serializer_class = MentorStudentUpdateMappingSerializer
     
@@ -244,6 +325,14 @@ class MentorStudentDetails(generics.GenericAPIView):
         return Response({'response': 'Record is deleted successfully!!'}, status=status.HTTP_204_NO_CONTENT)
 
 class PerformanceAPI(generics.ListAPIView):
+     """
+        Summary:
+        --------
+            This class will let authorized user to get list of performances of all students.
+        --------
+        Methods:
+            get_queryset : It will return all performances objects.
+    """
     permission_classes = (IsAuthenticated, IsMentorOrAdmin)
     serializer_class = PerformanceSerializer
     queryset = Performance.objects.all()
@@ -262,6 +351,15 @@ class PerformanceAPI(generics.ListAPIView):
             return []
 
 class PerformanceDetailsAPI(generics.RetrieveUpdateDestroyAPIView):
+     """
+        Summary:
+        --------
+            This class will let authorized user to create and get performance object by id.
+        --------
+        Methods:
+            get_queryset : It returns performances view according to user role.
+            perform_update : Admin or mentor will be able to update performance.
+    """
     permission_classes = (IsAuthenticated, IsMentorOrAdmin)
     serializer_class = PerformanceSerializer
     queryset = Performance.objects.all()

@@ -14,9 +14,17 @@ from django.conf import settings
 import pyshorteners
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from authentication.permissions import IsAdmin, IsNotAthenticated
+from authentication.permissions import IsAdmin, IsNotAthenticated, OnlyAdmin
 
 class UserCreationAPIView(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let admin to create new users.
+        --------
+        Methods:
+            post: It will create new user and send email to that user.
+    """
     permission_classes = (IsAuthenticated, IsAdmin)
     serializer_class = UserCreationSerializer
 
@@ -54,17 +62,23 @@ class UserCreationAPIView(generics.GenericAPIView):
 
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated, IsAdmin)
+    """
+        Summary:
+        --------
+            This class will let authorized user to update and get user details.
+        --------
+        Methods:
+            get_queryset : Admin will get all the users details.
+            perform_update : Admin will able to update user details.
+            perform_destroy : Admin can delete the user.
+    """
+    permission_classes = (IsAuthenticated, OnlyAdmin)
     serializer_class = UpdateUserSerializer
     queryset = User.objects.all()
     lookup_field = "id"
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == 'Admin':
-            return self.queryset.all()
-        else:
-            return self.queryset.filter(id=user)
+        return self.queryset.all()
 
     def perform_update(self, serializer):
         user = serializer.save(updated_by=self.request.user)
@@ -75,6 +89,14 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
         return Response({'response': f'{instance.role} is deleted successfully!!!'}, status=status.HTTP_204_NO_CONTENT)
 
 class Login(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to login.
+        --------
+        Methods:
+            post : User will able to login and create new session.
+    """
     permission_classes = (AllowAny,)
     serializer_class = LoginSerializer
     token_param_config = openapi.Parameter('token',in_=openapi.IN_QUERY,description='Description',type=openapi.TYPE_STRING)
@@ -86,8 +108,9 @@ class Login(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_data = serializer.data
         user = User.objects.get(username=user_data['username'])
-        if token:
-            try:
+        
+        try:
+            if token:
                 payload = jwt.decode(token, settings.SECRET_KEY)
                 user_from_token = User.objects.get(id=payload['user_id'])
                 if user_from_token==user and user.first_login == False:
@@ -99,18 +122,29 @@ class Login(generics.GenericAPIView):
                     return response
                 else:
                     return Response({'response':'You can use this link only once !!!'}, status=status.HTTP_400_BAD_REQUEST)
-            except jwt.ExpiredSignatureError:
+            elif not token and user.first_login == False and user.is_superuser==False:
+                return Response({'response':'Please check your email for first login!!!'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = authenticate(username=user_data['username'], password=user_data['password'])
+                login(request, user)
+                return Response(user_data, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
                 return Response({'error':'Link is Expired'}, status=status.HTTP_400_BAD_REQUEST)
-            except jwt.exceptions.DecodeError:
+        except jwt.exceptions.DecodeError:
                 return Response({'error':'Invalid Token'}, status=status.HTTP_400_BAD_REQUEST) 
-        elif not token and user.first_login == False and user.is_superuser==False:
-            return Response({'response':'Please check your email for first login!!!'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user = authenticate(username=user_data['username'], password=user_data['password'])
-            login(request, user)
-            return Response(user_data, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message':'Something went wrong.Please try again!!'}, status=status.HTTP_400_BAD_REQUEST)
+            
 
 class Logout(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to create and get notes.
+        --------
+        Methods:
+            get : Session will be deleted and user will be logged out.
+    """
     permission_classes = (IsAuthenticated,)
     def get(self, request):
         logout(request)
@@ -118,6 +152,14 @@ class Logout(generics.GenericAPIView):
 
 
 class ForgotPassword(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let user to reset password with out login.
+        --------
+        Methods:
+            post : User will get a new password link .
+    """
     serializer_class = ResetPasswordSerializer
     permission_classes = (IsNotAthenticated,)
 
@@ -146,6 +188,14 @@ class ForgotPassword(generics.GenericAPIView):
 
 
 class ResetPassword(generics.GenericAPIView):
+    """
+        Summary:
+        --------
+            This class will let authorized user to get a link for creating new password.
+        --------
+        Methods:
+            post : User will get a new password link by email.
+    """
     serializer_class = ResetPasswordSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -176,7 +226,14 @@ class ResetPassword(generics.GenericAPIView):
             return Response({'response':'This email does not exist!!!'}, status=status.HTTP_400_BAD_REQUEST)
 
 class NewPassword(generics.GenericAPIView):
-
+    """
+        Summary:
+        --------
+            This class will let user to create new password.
+        --------
+        Methods:
+            put : User will create and confirm new password.
+    """
     serializer_class = NewPasswordSerializer
     permission_classes = (AllowAny,)
     token_param_config = openapi.Parameter('token',in_=openapi.IN_QUERY,description='Description',type=openapi.TYPE_STRING)
