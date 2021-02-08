@@ -119,13 +119,13 @@ class AuthenticationAPITest(TestCase):
 
     def test_retrieve_user_details_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.get(reverse('user', kwargs={'id': self.admin.id}), content_type=CONTENT_TYPE)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.get(reverse('user', kwargs={'id': self.mentor.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_user_details_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.get(reverse('user', kwargs={'id': self.admin.id}), content_type=CONTENT_TYPE)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.get(reverse('user', kwargs={'id': self.student.id}), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 ### Test cases to update user-details API : 
 
@@ -150,12 +150,12 @@ class AuthenticationAPITest(TestCase):
 
     def test_user_details_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.put(reverse('user', kwargs={'id': self.admin.id}), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('user', kwargs={'id': self.mentor.id}), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_details_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.put(reverse('user', kwargs={'id': self.admin.id}), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
+        response = self.client.put(reverse('user', kwargs={'id': self.student.id}), data=json.dumps(self.valid_user_payload), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 ### Test cases to delete user-details API : 
@@ -176,12 +176,12 @@ class AuthenticationAPITest(TestCase):
 
     def test_delete_user_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.mentor_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.delete(reverse('user', kwargs={'id': self.admin.id}), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('user', kwargs={'id': self.mentor.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve_user_details_with_valid_payload_after_login_by_mentor_credentials(self):
         self.client.post(reverse('login'), data=json.dumps(self.student_login_payload), content_type=CONTENT_TYPE)
-        response = self.client.delete(reverse('user', kwargs={'id': self.admin.id}), content_type=CONTENT_TYPE)
+        response = self.client.delete(reverse('user', kwargs={'id': self.student.id}), content_type=CONTENT_TYPE)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 ### Test cases for login API : 
