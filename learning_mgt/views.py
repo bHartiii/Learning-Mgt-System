@@ -6,7 +6,8 @@ from learning_mgt.serializers import UpdateStudentDetailsSerializer, UpdateEduca
 from learning_mgt.models import Student, EducationDetails, Course, Mentor, MentorStudent, Performance
 from authentication.permissions import IsAdmin, IsMentor, IsStudent, OnlyAdmin, IsMentorOrAdmin
 from authentication.models import User
-
+import logging
+logger = logging.getLogger('django')
 
 class UpdateStudentDetails(generics.RetrieveUpdateAPIView):
     """
