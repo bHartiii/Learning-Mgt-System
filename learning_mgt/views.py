@@ -265,13 +265,12 @@ class MentorCourseMapping(generics.GenericAPIView):
     queryset = Mentor.objects.all()
     
     def get_queryset(self, mentor_id):
-        try:
-            user = self.request.user
-            if user.role=='Mentor':
-                return self.queryset.filter(mentor=user.id)
-            elif user.role == 'Admin':
-                return self.queryset.filter(mentor=mentor_id)
-
+        
+        user = self.request.user
+        if user.role=='Mentor':
+            return self.queryset.filter(mentor=user.id)
+        elif user.role == 'Admin':
+            return self.queryset.filter(mentor=mentor_id)
 
     def put(self, request, mentor_id):
         try:
@@ -308,7 +307,7 @@ class MentorCourseMapping(generics.GenericAPIView):
             return Response({'response':'This mentor does not exist'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(e)
-            return Response({'response':'Somethin went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'response':'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
         
 
 
