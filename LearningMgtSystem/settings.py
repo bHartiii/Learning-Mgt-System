@@ -153,3 +153,31 @@ EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+LOGGING = {
+    'version':1, 
+    'loggers' : {
+        'django' : {
+            'handlers':['file'],
+            'level' : 'DEBUG'
+        }
+    },
+    'handlers' : {
+        'file': {
+            'level': 'INFO',
+            'class':'logging.FileHandler',
+            'filename':'./log/lms.log',
+            'formatter':'simple',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level':'DEBUG'
+        },
+    },
+    'formatters':{
+        'simple':{
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{'
+        }
+    }
+}
